@@ -11,8 +11,7 @@
   body{margin:0;font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--txt)}
   .wrap{max-width:1100px;margin:0 auto;padding:20px}
   header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-  h1{font-size:20px;margin:0}
-  .sub{color:var(--mut);font-size:13px}
+  h1{font-size:20px;margin:0}.sub{color:var(--mut);font-size:13px}
   .badge{padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--line)}
   .badge.sim{background:rgba(232,163,61,.15);color:var(--warn);border-color:var(--warn)}
   .badge.live{background:rgba(46,193,107,.15);color:var(--brand2);border-color:var(--brand2)}
@@ -24,8 +23,8 @@
   .kpi .n{font-size:26px;font-weight:800}.kpi .l{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
   .meter{height:10px;border-radius:999px;background:var(--line);overflow:hidden;margin-top:8px}.meter>i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--brand2))}
   label{display:block;font-size:12px;color:var(--mut);margin:8px 0 4px}
-  input,button,textarea{font:inherit}
-  input,textarea{width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--txt)}
+  input,button,textarea,select{font:inherit}
+  input,textarea,select{width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--txt)}
   button{cursor:pointer;border:0;border-radius:9px;padding:10px 16px;font-weight:700;color:#fff;background:var(--brand)}
   button.sec{background:transparent;color:var(--txt);border:1px solid var(--line)}
   button:disabled{opacity:.5;cursor:not-allowed}
@@ -35,24 +34,27 @@
   .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
   .pill{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--mut)}
   .pill.aceite{color:var(--brand2);border-color:var(--brand2)}.pill.recusa{color:var(--danger);border-color:var(--danger)}.pill.handoff_humano{color:var(--warn);border-color:var(--warn)}
+  .st{font-size:10px;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--mut)}
+  .st.APPROVED{color:var(--brand2);border-color:var(--brand2)}.st.PENDING,.st.IN_APPEAL,.st.PENDING_DELETION{color:var(--warn);border-color:var(--warn)}.st.REJECTED,.st.DISABLED,.st.PAUSED{color:var(--danger);border-color:var(--danger)}
   .aviso{background:rgba(232,163,61,.12);border:1px solid var(--warn);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:10px}
   .erro{background:rgba(229,72,77,.12);border:1px solid var(--danger);color:var(--danger);border-radius:10px;padding:10px 12px;font-size:13px}
+  .ok{background:rgba(46,193,107,.12);border:1px solid var(--brand2);color:var(--brand2);border-radius:10px;padding:10px 12px;font-size:13px}
   .muted{color:var(--mut)}
   .out{white-space:pre-wrap;font-family:ui-monospace,monospace;font-size:12px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px;margin-top:10px}
   #loginView{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
   .loginbox{width:100%;max-width:380px}.loginbox h1{margin-bottom:4px}
   .hidden{display:none !important}
-  .tabs{display:flex;gap:8px;margin-bottom:16px}
+  .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
   .tab{padding:8px 14px;border-radius:9px;border:1px solid var(--line);background:transparent;color:var(--mut);cursor:pointer;font-weight:600}
   .tab.active{background:var(--card);color:var(--txt);border-color:var(--brand2)}
-  .chat{display:grid;grid-template-columns:300px 1fr;gap:12px;height:70vh;min-height:440px}
+  .chat{display:grid;grid-template-columns:300px 1fr;gap:12px;height:70vh;min-height:460px}
   @media(max-width:760px){.chat{grid-template-columns:1fr;height:auto}}
   .convlist{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow-y:auto}
   .convitem{padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer}
   .convitem:hover{background:rgba(127,127,127,.06)}.convitem.sel{background:rgba(46,193,107,.10)}
   .convitem .top{display:flex;justify-content:space-between;gap:8px;align-items:center}
   .convitem .nm{font-weight:700;font-size:13px}.convitem .pv{color:var(--mut);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .thread{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;min-height:440px}
+  .thread{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;min-height:460px}
   .thead{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px}
   .tbody{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
   .bubble{max-width:78%;padding:8px 12px;border-radius:12px;font-size:14px;white-space:pre-wrap;word-break:break-word}
@@ -61,6 +63,8 @@
   .bubble .meta{font-size:10px;color:var(--mut);margin-top:4px}
   .reply{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
   .reply textarea{min-height:44px;max-height:120px;resize:vertical}
+  .tplsend{border-top:1px solid var(--line);padding:12px;background:rgba(59,130,246,.06)}
+  .janaviso{padding:12px;border-top:1px solid var(--line);background:rgba(229,72,77,.10);color:var(--danger);font-size:13px}
   .center{flex:1;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:14px;text-align:center;padding:20px}
 </style>
 </head>
@@ -68,27 +72,21 @@
 
 <div id="loginView">
   <div class="loginbox">
-    <h1>Valenet CRM</h1>
-    <div class="sub" style="margin-bottom:16px">Fidelização — acesso restrito</div>
+    <h1>Valenet CRM</h1><div class="sub" style="margin-bottom:16px">Fidelização — acesso restrito</div>
     <div class="card">
-      <label>E-mail</label>
-      <input id="email" type="email" autocomplete="username" placeholder="voce@valenet.com.br" />
-      <label>Senha</label>
-      <input id="password" type="password" autocomplete="current-password" placeholder="sua senha" />
+      <label>E-mail</label><input id="email" type="email" autocomplete="username" placeholder="voce@valenet.com.br" />
+      <label>Senha</label><input id="password" type="password" autocomplete="current-password" placeholder="sua senha" />
       <button id="btnLogin" style="width:100%;margin-top:14px">Entrar</button>
       <div id="loginErro" class="erro hidden" style="margin-top:12px"></div>
     </div>
-    <div class="sub" style="text-align:center">Não tem acesso? Fale com o administrador do sistema.</div>
+    <div class="sub" style="text-align:center">Não tem acesso? Fale com o administrador.</div>
   </div>
 </div>
 
 <div id="appView" class="hidden">
   <div class="wrap">
     <header>
-      <div>
-        <h1>Valenet CRM — Fidelização</h1>
-        <div class="sub">Oferta +200MB por R$12,90 · painel + WhatsApp</div>
-      </div>
+      <div><h1>Valenet CRM — Fidelização</h1><div class="sub">Oferta +200MB por R$12,90 · painel + WhatsApp</div></div>
       <div class="row" style="align-items:center">
         <span class="sub" id="quemSou"></span>
         <span id="modeBadge" class="badge sim">…</span>
@@ -99,54 +97,79 @@
     <div class="tabs">
       <button class="tab active" data-tab="campanha" id="tabBtnCampanha">Campanha</button>
       <button class="tab" data-tab="conversas" id="tabBtnConversas">Conversas</button>
+      <button class="tab" data-tab="templates" id="tabBtnTemplates">Templates</button>
     </div>
 
-    <!-- ===== CAMPANHA ===== -->
+    <!-- CAMPANHA -->
     <div id="tabCampanha">
       <div id="avisos"></div>
       <div class="grid" id="kpis"></div>
-      <div class="card">
-        <strong>Taxa de aceite</strong>
-        <div class="sub" id="taxaTxt" style="margin:4px 0">—</div>
-        <div class="meter"><i id="taxaBar" style="width:0%"></i></div>
-        <div class="sub" style="margin-top:6px">Meta do sprint: <b>20%</b></div>
-      </div>
+      <div class="card"><strong>Taxa de aceite</strong><div class="sub" id="taxaTxt" style="margin:4px 0">—</div><div class="meter"><i id="taxaBar" style="width:0%"></i></div><div class="sub" style="margin-top:6px">Meta do sprint: <b>20%</b></div></div>
       <div class="card">
         <div class="row" style="justify-content:space-between">
           <div><strong>Disparar HSM</strong><div class="sub" id="disparoHint">Reserva um lote de elegíveis e envia (ou simula).</div></div>
-          <div class="row">
-            <div style="width:120px"><label>Limite do lote</label><input id="limite" type="number" value="25" min="1" max="200" /></div>
-            <div style="align-self:flex-end"><button id="btnDisparar">Disparar lote</button></div>
-          </div>
+          <div class="row"><div style="width:120px"><label>Limite do lote</label><input id="limite" type="number" value="25" min="1" max="200" /></div><div style="align-self:flex-end"><button id="btnDisparar">Disparar lote</button></div></div>
         </div>
         <div id="disparoOut" class="out" style="display:none"></div>
       </div>
-      <div class="card">
-        <strong>Elegíveis (preview)</strong> <span class="muted" id="elegCount"></span>
-        <div class="scroll"><table id="elegTbl"><thead><tr><th>Cliente</th><th>Cidade</th><th>Banda</th><th>Meses vig.</th><th>Total</th><th>Telefone</th></tr></thead><tbody></tbody></table></div>
-      </div>
-      <div class="card">
-        <strong>Resultados recentes</strong>
-        <div class="scroll"><table id="resTbl"><thead><tr><th>Cliente</th><th>Telefone</th><th>Status</th><th>Resposta</th><th>Sim?</th><th>Disparo</th></tr></thead><tbody></tbody></table></div>
-      </div>
+      <div class="card"><strong>Elegíveis (preview)</strong> <span class="muted" id="elegCount"></span><div class="scroll"><table id="elegTbl"><thead><tr><th>Cliente</th><th>Cidade</th><th>Banda</th><th>Meses vig.</th><th>Total</th><th>Telefone</th></tr></thead><tbody></tbody></table></div></div>
+      <div class="card"><strong>Resultados recentes</strong><div class="scroll"><table id="resTbl"><thead><tr><th>Cliente</th><th>Telefone</th><th>Status</th><th>Resposta</th><th>Sim?</th><th>Disparo</th></tr></thead><tbody></tbody></table></div></div>
     </div>
 
-    <!-- ===== CONVERSAS ===== -->
+    <!-- CONVERSAS -->
     <div id="tabConversas" class="hidden">
       <div class="chat">
         <div class="convlist" id="convList"><div class="center">Carregando…</div></div>
         <div class="thread">
           <div class="thead">
             <div><strong id="convNome">Selecione uma conversa</strong><div class="sub" id="convTel"></div></div>
-            <span id="convJanela" class="badge fechada hidden"></span>
+            <div class="row" style="align-items:center">
+              <span id="convJanela" class="badge fechada hidden"></span>
+              <button class="sec" id="btnTplToggle" style="padding:6px 10px;display:none">Enviar template</button>
+            </div>
           </div>
           <div class="tbody" id="convBody"><div class="center">Escolha uma conversa à esquerda para ver o histórico e responder.</div></div>
+          <div class="tplsend hidden" id="tplSend">
+            <label>Template aprovado</label>
+            <select id="tplSelect"><option value="">— selecione —</option></select>
+            <div id="tplVars"></div>
+            <div class="sub" id="tplPreview" style="margin:8px 0;white-space:pre-wrap"></div>
+            <button id="btnEnviarTpl">Enviar template</button>
+            <button class="sec" id="btnTplCancel" style="margin-left:8px">Cancelar</button>
+          </div>
           <div class="reply" id="replyBox" style="display:none">
             <textarea id="replyText" placeholder="Escreva uma resposta…"></textarea>
             <button id="btnEnviar" style="align-self:stretch">Enviar</button>
           </div>
-          <div class="janfechada hidden" id="janAviso"></div>
+          <div class="janaviso hidden" id="janAviso"></div>
         </div>
+      </div>
+    </div>
+
+    <!-- TEMPLATES -->
+    <div id="tabTemplates" class="hidden">
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <strong>Templates (HSM)</strong>
+          <button class="sec" id="btnReloadTpl" style="padding:6px 12px">Recarregar</button>
+        </div>
+        <div id="tplListMsg" class="sub" style="margin-top:6px">Carregando…</div>
+        <div class="scroll" style="margin-top:10px"><table id="tplTbl"><thead><tr><th>Nome</th><th>Status</th><th>Categoria</th><th>Idioma</th><th>Corpo</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <div class="card">
+        <strong>Criar novo template</strong>
+        <div class="sub" style="margin:4px 0 10px">Após criar, o template vai para <b>aprovação da Meta</b> (pode levar de minutos a horas). Use <code>{{1}}</code>, <code>{{2}}</code>… no corpo para variáveis.</div>
+        <div class="row">
+          <div style="flex:2;min-width:220px"><label>Nome (sem espaços)</label><input id="ntNome" placeholder="ex: aviso_fatura" /></div>
+          <div style="flex:1;min-width:150px"><label>Categoria</label><select id="ntCat"><option>MARKETING</option><option>UTILITY</option><option>AUTHENTICATION</option></select></div>
+          <div style="flex:1;min-width:120px"><label>Idioma</label><input id="ntLang" value="pt_BR" /></div>
+        </div>
+        <label>Cabeçalho (opcional, texto)</label><input id="ntHeader" placeholder="ex: Valenet" />
+        <label>Corpo (com variáveis {{1}}, {{2}}…)</label><textarea id="ntBody" style="min-height:90px" placeholder="Olá {{1}}! Você tem um benefício: +200MB por R$12,90. Responda SIM para ativar."></textarea>
+        <div id="ntVars"></div>
+        <label>Rodapé (opcional)</label><input id="ntFooter" placeholder="ex: Valenet Telecom" />
+        <div style="margin-top:12px"><button id="btnCriarTpl">Criar template</button></div>
+        <div id="ntMsg" style="margin-top:10px"></div>
       </div>
     </div>
 
@@ -164,121 +187,103 @@ function clearSession(){localStorage.removeItem(LS)}
 function esc(s){return String(s??"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}
 function num(x){return (x==null?0:x).toLocaleString("pt-BR")}
 function hora(t){return t?new Date(t).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):""}
+function varsCount(t){return new Set((String(t).match(/\{\{\s*\d+\s*\}\}/g)||[])).size}
+function bodyOf(tpl){const c=(tpl.components||[]).find(x=>x.type==="BODY");return c?c.text:""}
 
 function saveFromAuth(d){setSession({access_token:d.access_token,refresh_token:d.refresh_token,email:(d.user&&d.user.email)||getSession()?.email||""})}
-async function login(email,password){
-  const r=await fetch(`${SB}/auth/v1/token?grant_type=password`,{method:"POST",headers:{apikey:ANON,"content-type":"application/json"},body:JSON.stringify({email,password})});
-  const d=await r.json().catch(()=>({})); if(!r.ok) throw new Error(d.error_description||d.msg||d.error||"e-mail ou senha inválidos"); saveFromAuth(d);
-}
-async function refreshToken(){const s=getSession();if(!s||!s.refresh_token)return false;
-  try{const r=await fetch(`${SB}/auth/v1/token?grant_type=refresh_token`,{method:"POST",headers:{apikey:ANON,"content-type":"application/json"},body:JSON.stringify({refresh_token:s.refresh_token})});if(!r.ok)return false;saveFromAuth(await r.json());return true}catch{return false}}
+async function login(email,password){const r=await fetch(`${SB}/auth/v1/token?grant_type=password`,{method:"POST",headers:{apikey:ANON,"content-type":"application/json"},body:JSON.stringify({email,password})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error_description||d.msg||d.error||"e-mail ou senha inválidos");saveFromAuth(d)}
+async function refreshToken(){const s=getSession();if(!s||!s.refresh_token)return false;try{const r=await fetch(`${SB}/auth/v1/token?grant_type=refresh_token`,{method:"POST",headers:{apikey:ANON,"content-type":"application/json"},body:JSON.stringify({refresh_token:s.refresh_token})});if(!r.ok)return false;saveFromAuth(await r.json());return true}catch{return false}}
 function logout(){stopPoll();clearSession();showLogin()}
-async function api(path,opts={},retried=false){
-  const s=getSession();
-  const r=await fetch(FN+path,{...opts,headers:{Authorization:"Bearer "+((s&&s.access_token)||""),"content-type":"application/json",...(opts.headers||{})}});
-  if(r.status===401&&!retried){if(await refreshToken())return api(path,opts,true);logout();throw new Error("sessão expirada — faça login novamente")}
-  const data=await r.json().catch(()=>({})); if(!r.ok) throw new Error(data.erro||("HTTP "+r.status)); return data;
-}
+async function api(path,opts={},retried=false){const s=getSession();const r=await fetch(FN+path,{...opts,headers:{Authorization:"Bearer "+((s&&s.access_token)||""),"content-type":"application/json",...(opts.headers||{})}});if(r.status===401&&!retried){if(await refreshToken())return api(path,opts,true);logout();throw new Error("sessão expirada — faça login novamente")}const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.erro||("HTTP "+r.status));return data}
 function showLogin(){$("#appView").classList.add("hidden");$("#loginView").classList.remove("hidden")}
 function showApp(){$("#loginView").classList.add("hidden");$("#appView").classList.remove("hidden");$("#quemSou").textContent=getSession()?.email||""}
 
-// ===== abas =====
+// abas
 let abaAtual="campanha";
-function showTab(t){
-  abaAtual=t;
-  $("#tabCampanha").classList.toggle("hidden",t!=="campanha");
-  $("#tabConversas").classList.toggle("hidden",t!=="conversas");
-  $("#tabBtnCampanha").classList.toggle("active",t==="campanha");
-  $("#tabBtnConversas").classList.toggle("active",t==="conversas");
-  if(t==="conversas"){ loadConversas(); startPoll(); } else { stopPoll(); }
+function showTab(t){abaAtual=t;
+  ["campanha","conversas","templates"].forEach(x=>{$("#tab"+x[0].toUpperCase()+x.slice(1)).classList.toggle("hidden",x!==t);$("#tabBtn"+x[0].toUpperCase()+x.slice(1)).classList.toggle("active",x===t)});
+  if(t==="conversas"){loadConversas();startPoll()}else{stopPoll()}
+  if(t==="templates")loadTemplates();
 }
 $("#tabBtnCampanha").onclick=()=>showTab("campanha");
 $("#tabBtnConversas").onclick=()=>showTab("conversas");
+$("#tabBtnTemplates").onclick=()=>showTab("templates");
 
-// ===== campanha =====
-async function refresh(){
-  try{
-    const d=await api("/painel-dados",{method:"POST",body:"{}"});
-    const cfg=d.config||{}; window._cfg=cfg;
-    const modo=cfg.modo||"simulation";
-    const b=$("#modeBadge");b.className="badge "+(modo==="live"?"live":"sim");b.textContent=modo==="live"?"CHAT LIVE":"SIMULAÇÃO";
-    $("#disparoHint").textContent=cfg.campanha_live?"Campanha LIVE: envia templates reais.":"Campanha em SIMULAÇÃO (envio real travado).";
-    $("#avisos").innerHTML=(d.avisos||[]).map(a=>`<div class="aviso">⚠️ ${esc(a)}</div>`).join("");
-    const f=d.funil||{};
-    $("#kpis").innerHTML=[["Base",f.base_total],["Elegíveis",f.elegiveis],["Disparados",f.disparados],["Aceitos",f.aceitos],["Recusas",f.recusas],["Sem resposta",f.sem_resposta],["Handoff",f.handoff_humano]].map(([l,n])=>`<div class="kpi"><div class="n">${num(n)}</div><div class="l">${l}</div></div>`).join("");
-    const taxa=Number(f.taxa_aceite_pct||0);$("#taxaTxt").innerHTML=`<b style="font-size:20px">${taxa}%</b> de aceite sobre disparados`;$("#taxaBar").style.width=Math.min(100,(taxa/20)*100)+"%";
-    $("#elegCount").textContent="("+num((d.elegiveis||[]).length)+" mostrando)";
-    $("#elegTbl tbody").innerHTML=(d.elegiveis||[]).map(e=>`<tr><td>${esc(e.nome)}<div class="muted">#${esc(e.codcliente)}</div></td><td>${esc(e.cidade)}</td><td>${esc(e.banda)}</td><td>${esc(e.meses_vigencia)}</td><td>R$ ${esc(e.total_mensal)}</td><td class="muted">${esc(e.telefone_mascarado)}</td></tr>`).join("");
-    $("#resTbl tbody").innerHTML=(d.recentes||[]).map(r=>`<tr><td>#${esc(r.codcliente)}</td><td class="muted">${esc(r.telefone_mascarado)}</td><td>${esc(r.status_disparo)}</td><td>${r.resposta?`<span class="pill ${esc(r.resposta)}">${esc(r.resposta)}</span>`:'<span class="muted">—</span>'}</td><td>${r.simulado?'<span class="pill">simulado</span>':''}</td><td class="muted">${hora(r.data_disparo)}</td></tr>`).join("");
-  }catch(e){$("#avisos").innerHTML=`<div class="erro">Erro: ${esc(e.message)}</div>`}
-}
-$("#btnDisparar").onclick=async()=>{
-  const btn=$("#btnDisparar"),out=$("#disparoOut");const limite=Number($("#limite").value)||25;
-  const live=!!(window._cfg&&window._cfg.campanha_live);
-  if(!confirm(live?`CAMPANHA LIVE: enviar templates reais para até ${limite} clientes. Confirmar?`:`Simular disparo para até ${limite} elegíveis?`))return;
-  btn.disabled=true;out.style.display="block";out.textContent="Disparando…";
-  try{const r=await api("/disparar-hsm",{method:"POST",body:JSON.stringify({limite})});out.textContent=`Modo: ${r.modo}\nReservados: ${r.reservados}\nEnviados: ${r.enviados}\nFalhas: ${r.falhas}`;refresh();}
-  catch(e){out.textContent="Erro: "+e.message}finally{btn.disabled=false}
-};
+// campanha
+async function refresh(){try{const d=await api("/painel-dados",{method:"POST",body:"{}"});const cfg=d.config||{};window._cfg=cfg;const modo=cfg.modo||"simulation";
+  const b=$("#modeBadge");b.className="badge "+(modo==="live"?"live":"sim");b.textContent=modo==="live"?"CHAT LIVE":"SIMULAÇÃO";
+  $("#disparoHint").textContent=cfg.campanha_live?"Campanha LIVE: envia templates reais.":"Campanha em SIMULAÇÃO (envio real travado).";
+  $("#avisos").innerHTML=(d.avisos||[]).map(a=>`<div class="aviso">⚠️ ${esc(a)}</div>`).join("");
+  const f=d.funil||{};
+  $("#kpis").innerHTML=[["Base",f.base_total],["Elegíveis",f.elegiveis],["Disparados",f.disparados],["Aceitos",f.aceitos],["Recusas",f.recusas],["Sem resposta",f.sem_resposta],["Handoff",f.handoff_humano]].map(([l,n])=>`<div class="kpi"><div class="n">${num(n)}</div><div class="l">${l}</div></div>`).join("");
+  const taxa=Number(f.taxa_aceite_pct||0);$("#taxaTxt").innerHTML=`<b style="font-size:20px">${taxa}%</b> de aceite sobre disparados`;$("#taxaBar").style.width=Math.min(100,(taxa/20)*100)+"%";
+  $("#elegCount").textContent="("+num((d.elegiveis||[]).length)+" mostrando)";
+  $("#elegTbl tbody").innerHTML=(d.elegiveis||[]).map(e=>`<tr><td>${esc(e.nome)}<div class="muted">#${esc(e.codcliente)}</div></td><td>${esc(e.cidade)}</td><td>${esc(e.banda)}</td><td>${esc(e.meses_vigencia)}</td><td>R$ ${esc(e.total_mensal)}</td><td class="muted">${esc(e.telefone_mascarado)}</td></tr>`).join("");
+  $("#resTbl tbody").innerHTML=(d.recentes||[]).map(r=>`<tr><td>#${esc(r.codcliente)}</td><td class="muted">${esc(r.telefone_mascarado)}</td><td>${esc(r.status_disparo)}</td><td>${r.resposta?`<span class="pill ${esc(r.resposta)}">${esc(r.resposta)}</span>`:'<span class="muted">—</span>'}</td><td>${r.simulado?'<span class="pill">simulado</span>':''}</td><td class="muted">${hora(r.data_disparo)}</td></tr>`).join("");
+}catch(e){$("#avisos").innerHTML=`<div class="erro">Erro: ${esc(e.message)}</div>`}}
+$("#btnDisparar").onclick=async()=>{const btn=$("#btnDisparar"),out=$("#disparoOut");const limite=Number($("#limite").value)||25;const live=!!(window._cfg&&window._cfg.campanha_live);if(!confirm(live?`CAMPANHA LIVE: enviar templates reais para até ${limite} clientes. Confirmar?`:`Simular disparo para até ${limite} elegíveis?`))return;btn.disabled=true;out.style.display="block";out.textContent="Disparando…";try{const r=await api("/disparar-hsm",{method:"POST",body:JSON.stringify({limite})});out.textContent=`Modo: ${r.modo}\nReservados: ${r.reservados}\nEnviados: ${r.enviados}\nFalhas: ${r.falhas}`;refresh()}catch(e){out.textContent="Erro: "+e.message}finally{btn.disabled=false}};
 
-// ===== conversas (chat) =====
-let convAtual=null, convJanela=false, pollTimer=null, convCache=[];
-async function loadConversas(){
-  try{
-    const d=await api("/painel-conversas",{method:"POST",body:"{}"});
-    convCache=d.conversas||[];
-    if(!convCache.length){$("#convList").innerHTML='<div class="center">Nenhuma conversa ainda.<br>Elas aparecem quando um cliente responde.</div>';return;}
-    $("#convList").innerHTML=convCache.map(c=>{
-      const nome=c.nome||("+"+esc(c.telefone_canon));
-      const jb=c.janela_aberta?'<span class="badge aberta" style="font-size:10px;padding:1px 7px">24h</span>':'';
-      const pv=(c.ultima_direcao==="out"?"você: ":"")+(c.ultima_texto||"");
-      return `<div class="convitem ${c.telefone_canon===convAtual?'sel':''}" data-tel="${esc(c.telefone_canon)}" data-jan="${c.janela_aberta?1:0}">
-        <div class="top"><span class="nm">${esc(nome)}</span>${jb}</div>
-        <div class="pv">${esc(pv)}</div>
-        <div class="pv">${hora(c.ultima_em)}</div></div>`;
-    }).join("");
-    $("#convList").querySelectorAll(".convitem").forEach(el=>el.onclick=()=>openConversa(el.dataset.tel, el.dataset.jan==="1"));
-  }catch(e){$("#convList").innerHTML=`<div class="center">Erro: ${esc(e.message)}</div>`}
-}
-async function openConversa(tel, janela){
-  convAtual=tel; convJanela=janela;
-  const c=convCache.find(x=>x.telefone_canon===tel)||{};
-  $("#convNome").textContent=c.nome||("+"+tel);
-  $("#convTel").textContent="+"+tel+(c.codcliente?(" · cliente #"+c.codcliente):"");
-  const jb=$("#convJanela");jb.classList.remove("hidden");
-  jb.className="badge "+(janela?"aberta":"fechada");jb.textContent=janela?"janela 24h aberta":"janela fechada";
+// conversas
+let convAtual=null,convJanela=false,pollTimer=null,convCache=[];
+async function loadConversas(){try{const d=await api("/painel-conversas",{method:"POST",body:"{}"});convCache=d.conversas||[];
+  if(!convCache.length){$("#convList").innerHTML='<div class="center">Nenhuma conversa ainda.</div>';return}
+  $("#convList").innerHTML=convCache.map(c=>{const nome=c.nome||("+"+esc(c.telefone_canon));const jb=c.janela_aberta?'<span class="badge aberta" style="font-size:10px;padding:1px 7px">24h</span>':'';const pv=(c.ultima_direcao==="out"?"você: ":"")+(c.ultima_texto||"");return `<div class="convitem ${c.telefone_canon===convAtual?'sel':''}" data-tel="${esc(c.telefone_canon)}" data-jan="${c.janela_aberta?1:0}"><div class="top"><span class="nm">${esc(nome)}</span>${jb}</div><div class="pv">${esc(pv)}</div><div class="pv">${hora(c.ultima_em)}</div></div>`}).join("");
+  $("#convList").querySelectorAll(".convitem").forEach(el=>el.onclick=()=>openConversa(el.dataset.tel,el.dataset.jan==="1"))
+}catch(e){$("#convList").innerHTML=`<div class="center">Erro: ${esc(e.message)}</div>`}}
+async function openConversa(tel,janela){convAtual=tel;convJanela=janela;const c=convCache.find(x=>x.telefone_canon===tel)||{};
+  $("#convNome").textContent=c.nome||("+"+tel);$("#convTel").textContent="+"+tel+(c.codcliente?(" · cliente #"+c.codcliente):"");
+  const jb=$("#convJanela");jb.classList.remove("hidden");jb.className="badge "+(janela?"aberta":"fechada");jb.textContent=janela?"janela 24h aberta":"janela fechada";
+  $("#btnTplToggle").style.display="inline-block";$("#tplSend").classList.add("hidden");
   $("#convList").querySelectorAll(".convitem").forEach(el=>el.classList.toggle("sel",el.dataset.tel===tel));
-  // caixa de resposta conforme a janela
-  if(janela){$("#replyBox").style.display="flex";$("#janAviso").classList.add("hidden");}
-  else{$("#replyBox").style.display="none";$("#janAviso").classList.remove("hidden");$("#janAviso").textContent="Janela de 24h fechada — o WhatsApp só permite texto livre até 24h após a última mensagem do cliente. Fora disso, use um template (HSM).";}
-  await loadThread();
-}
-async function loadThread(){
-  if(!convAtual)return;
-  try{
-    const d=await api("/painel-conversas",{method:"POST",body:JSON.stringify({telefone:convAtual})});
-    const body=$("#convBody");
-    body.innerHTML=(d.mensagens||[]).map(m=>`<div class="bubble ${m.direcao==="in"?"in":"out"}">${esc(m.texto)}<div class="meta">${m.direcao==="out"?(esc(m.operador||"você")+" · "):""}${esc(m.status||"")}${m.simulado?" · simulado":""} · ${hora(m.criado_em)}</div></div>`).join("")||'<div class="center">Sem mensagens.</div>';
-    body.scrollTop=body.scrollHeight;
-  }catch(e){$("#convBody").innerHTML=`<div class="center">Erro: ${esc(e.message)}</div>`}
-}
-$("#btnEnviar").onclick=async()=>{
-  const ta=$("#replyText"),btn=$("#btnEnviar");const texto=ta.value.trim();
-  if(!texto||!convAtual)return;
-  btn.disabled=true;
-  try{await api("/enviar-mensagem",{method:"POST",body:JSON.stringify({telefone:convAtual,texto})});ta.value="";await loadThread();loadConversas();}
-  catch(e){alert("Não enviou: "+e.message);}finally{btn.disabled=false}
-};
-$("#replyText")?.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("#btnEnviar").click();}});
-function startPoll(){stopPoll();pollTimer=setInterval(()=>{if(abaAtual==="conversas"){loadConversas();if(convAtual)loadThread();}},7000);}
-function stopPoll(){if(pollTimer){clearInterval(pollTimer);pollTimer=null;}}
+  if(janela){$("#replyBox").style.display="flex";$("#janAviso").classList.add("hidden")}
+  else{$("#replyBox").style.display="none";$("#janAviso").classList.remove("hidden");$("#janAviso").innerHTML="🚫 <b>Envio bloqueado:</b> a janela de 24h fechou. O WhatsApp não permite texto livre fora dela — para reabrir a conversa, use o botão <b>Enviar template</b> acima (mensagem aprovada pela Meta)."}
+  await loadThread()}
+async function loadThread(){if(!convAtual)return;try{const d=await api("/painel-conversas",{method:"POST",body:JSON.stringify({telefone:convAtual})});const body=$("#convBody");
+  body.innerHTML=(d.mensagens||[]).map(m=>`<div class="bubble ${m.direcao==="in"?"in":"out"}">${esc(m.texto)}<div class="meta">${m.tipo==="template"?"[template] ":""}${m.direcao==="out"?(esc(m.operador||"você")+" · "):""}${esc(m.status||"")}${m.simulado?" · simulado":""} · ${hora(m.criado_em)}</div></div>`).join("")||'<div class="center">Sem mensagens.</div>';
+  body.scrollTop=body.scrollHeight}catch(e){$("#convBody").innerHTML=`<div class="center">Erro: ${esc(e.message)}</div>`}}
+$("#btnEnviar").onclick=async()=>{const ta=$("#replyText"),btn=$("#btnEnviar");const texto=ta.value.trim();if(!texto||!convAtual)return;btn.disabled=true;try{await api("/enviar-mensagem",{method:"POST",body:JSON.stringify({telefone:convAtual,texto})});ta.value="";await loadThread();loadConversas()}catch(e){alert("Não enviou: "+e.message)}finally{btn.disabled=false}};
+$("#replyText")?.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("#btnEnviar").click()}});
+function startPoll(){stopPoll();pollTimer=setInterval(()=>{if(abaAtual==="conversas"){loadConversas();if(convAtual)loadThread()}},7000)}
+function stopPoll(){if(pollTimer){clearInterval(pollTimer);pollTimer=null}}
 
-// ===== login / init =====
-$("#btnLogin").onclick=async()=>{const b=$("#btnLogin"),err=$("#loginErro");err.classList.add("hidden");b.disabled=true;b.textContent="Entrando…";
-  try{await login($("#email").value.trim(),$("#password").value);showApp();refresh();}catch(e){err.textContent=e.message;err.classList.remove("hidden");}finally{b.disabled=false;b.textContent="Entrar";}};
+// enviar template dentro da conversa
+$("#btnTplToggle").onclick=async()=>{const el=$("#tplSend");el.classList.toggle("hidden");if(!el.classList.contains("hidden")){await ensureTemplates();fillTplSelect()}};
+$("#btnTplCancel").onclick=()=>$("#tplSend").classList.add("hidden");
+function aprovados(){return templatesCache.filter(t=>t.status==="APPROVED")}
+function fillTplSelect(){const sel=$("#tplSelect");const ap=aprovados();sel.innerHTML='<option value="">— selecione —</option>'+ap.map(t=>`<option value="${esc(t.name)}">${esc(t.name)} (${esc(t.language)})</option>`).join("");
+  if(!ap.length){$("#tplVars").innerHTML='<div class="sub">Nenhum template APROVADO ainda. Crie um na aba Templates e aguarde a Meta aprovar.</div>';$("#tplPreview").textContent=""}else{$("#tplVars").innerHTML="";$("#tplPreview").textContent=""}}
+$("#tplSelect").onchange=()=>{const t=templatesCache.find(x=>x.name===$("#tplSelect").value);if(!t){$("#tplVars").innerHTML="";$("#tplPreview").textContent="";return}
+  const body=bodyOf(t);const n=varsCount(body);let h="";for(let i=1;i<=n;i++)h+=`<label>Variável {{${i}}}</label><input class="tplvar" data-i="${i}" placeholder="valor da variável ${i}" />`;
+  $("#tplVars").innerHTML=h;tplPreview();$("#tplVars").querySelectorAll(".tplvar").forEach(inp=>inp.oninput=tplPreview)};
+function tplPreview(){const t=templatesCache.find(x=>x.name===$("#tplSelect").value);if(!t)return;let body=bodyOf(t);$("#tplVars").querySelectorAll(".tplvar").forEach(inp=>{body=body.replace(new RegExp("\\{\\{\\s*"+inp.dataset.i+"\\s*\\}\\}","g"),inp.value||("{{"+inp.dataset.i+"}}"))});$("#tplPreview").textContent="Prévia: "+body}
+$("#btnEnviarTpl").onclick=async()=>{const btn=$("#btnEnviarTpl");const t=templatesCache.find(x=>x.name===$("#tplSelect").value);if(!t){alert("Selecione um template");return}
+  const vars=[...$("#tplVars").querySelectorAll(".tplvar")].map(i=>i.value.trim());if(vars.some(v=>!v)){alert("Preencha todas as variáveis");return}
+  let body=bodyOf(t);vars.forEach((v,i)=>body=body.replace(new RegExp("\\{\\{\\s*"+(i+1)+"\\s*\\}\\}","g"),v));
+  btn.disabled=true;try{await api("/enviar-template",{method:"POST",body:JSON.stringify({telefone:convAtual,template_name:t.name,language:t.language,variaveis:vars,preview:body})});$("#tplSend").classList.add("hidden");await loadThread();loadConversas()}catch(e){alert("Não enviou o template: "+e.message)}finally{btn.disabled=false}};
+
+// templates (aba)
+let templatesCache=[],templatesCarregado=false;
+async function ensureTemplates(){if(!templatesCarregado)await loadTemplates()}
+async function loadTemplates(){const msg=$("#tplListMsg");msg.textContent="Carregando…";try{const d=await api("/templates",{method:"POST",body:JSON.stringify({action:"list"})});templatesCache=d.templates||[];templatesCarregado=true;
+  msg.textContent=templatesCache.length?`${templatesCache.length} template(s).`:"Nenhum template ainda.";
+  $("#tplTbl tbody").innerHTML=templatesCache.map(t=>`<tr><td><b>${esc(t.name)}</b></td><td><span class="st ${esc(t.status)}">${esc(t.status)}</span></td><td>${esc(t.category)}</td><td>${esc(t.language)}</td><td class="muted">${esc(bodyOf(t).slice(0,80))}</td></tr>`).join("")
+}catch(e){templatesCarregado=false;$("#tplTbl tbody").innerHTML="";msg.innerHTML=`<span class="erro" style="display:inline-block">${esc(e.message)}</span>`}}
+$("#btnReloadTpl").onclick=()=>{templatesCarregado=false;loadTemplates()};
+$("#ntBody").addEventListener("input",()=>{const n=varsCount($("#ntBody").value);let h="";for(let i=1;i<=n;i++)h+=`<label>Exemplo para {{${i}}}</label><input class="ntvar" placeholder="ex: valor de {{${i}}}" />`;$("#ntVars").innerHTML=h});
+$("#btnCriarTpl").onclick=async()=>{const btn=$("#btnCriarTpl"),msg=$("#ntMsg");
+  const tpl={name:$("#ntNome").value.trim(),category:$("#ntCat").value,language:$("#ntLang").value.trim()||"pt_BR",header:$("#ntHeader").value.trim(),body:$("#ntBody").value.trim(),footer:$("#ntFooter").value.trim(),exemplos:[...document.querySelectorAll("#ntVars .ntvar")].map(i=>i.value.trim())};
+  if(!tpl.name){msg.innerHTML='<div class="erro">Informe um nome.</div>';return}
+  if(!tpl.body){msg.innerHTML='<div class="erro">Informe o corpo.</div>';return}
+  if(tpl.exemplos.some(v=>!v)){msg.innerHTML='<div class="erro">Preencha os exemplos de todas as variáveis.</div>';return}
+  btn.disabled=true;msg.innerHTML='<div class="sub">Enviando para a Meta…</div>';
+  try{const r=await api("/templates",{method:"POST",body:JSON.stringify({action:"create",template:tpl})});msg.innerHTML=`<div class="ok">✅ Template "<b>${esc(r.template.name)}</b>" criado — status: <b>${esc(r.template.status)}</b>. Aguarde a aprovação da Meta.</div>`;templatesCarregado=false;loadTemplates()}
+  catch(e){msg.innerHTML=`<div class="erro">${esc(e.message)}</div>`}finally{btn.disabled=false}};
+
+// login/init
+$("#btnLogin").onclick=async()=>{const b=$("#btnLogin"),err=$("#loginErro");err.classList.add("hidden");b.disabled=true;b.textContent="Entrando…";try{await login($("#email").value.trim(),$("#password").value);showApp();refresh()}catch(e){err.textContent=e.message;err.classList.remove("hidden")}finally{b.disabled=false;b.textContent="Entrar"}};
 $("#password").addEventListener("keydown",e=>{if(e.key==="Enter")$("#btnLogin").click()});
 $("#btnLogout").onclick=logout;
-(function init(){ if(getSession()?.access_token){showApp();refresh();} else showLogin(); })();
+(function init(){if(getSession()?.access_token){showApp();refresh()}else showLogin()})();
 </script>
 </body>
 </html>
