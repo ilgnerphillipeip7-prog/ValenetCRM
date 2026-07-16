@@ -5,13 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Valenet CRM — Painel de Fidelização</title>
 <style>
-  :root{
-    --bg:#0f1115; --card:#171a21; --line:#262b36; --txt:#e7ebf0; --mut:#93a0b4;
-    --brand:#1f8f4e; --brand2:#2ec16b; --warn:#e8a33d; --danger:#e5484d; --accent:#3b82f6;
-  }
-  @media (prefers-color-scheme: light){
-    :root{--bg:#f5f7fa;--card:#fff;--line:#e3e8ef;--txt:#1a2230;--mut:#5b6675;}
-  }
+  :root{--bg:#0f1115;--card:#171a21;--line:#262b36;--txt:#e7ebf0;--mut:#93a0b4;--brand:#1f8f4e;--brand2:#2ec16b;--warn:#e8a33d;--danger:#e5484d;--accent:#3b82f6;}
+  @media (prefers-color-scheme: light){:root{--bg:#f5f7fa;--card:#fff;--line:#e3e8ef;--txt:#1a2230;--mut:#5b6675;}}
   *{box-sizing:border-box}
   body{margin:0;font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--txt)}
   .wrap{max-width:1100px;margin:0 auto;padding:20px}
@@ -21,42 +16,56 @@
   .badge{padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--line)}
   .badge.sim{background:rgba(232,163,61,.15);color:var(--warn);border-color:var(--warn)}
   .badge.live{background:rgba(46,193,107,.15);color:var(--brand2);border-color:var(--brand2)}
+  .badge.aberta{background:rgba(46,193,107,.15);color:var(--brand2);border-color:var(--brand2)}
+  .badge.fechada{background:rgba(147,160,180,.12);color:var(--mut)}
   .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
   .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
-  .kpi .n{font-size:26px;font-weight:800}
-  .kpi .l{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
-  .meter{height:10px;border-radius:999px;background:var(--line);overflow:hidden;margin-top:8px}
-  .meter>i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--brand2))}
+  .kpi .n{font-size:26px;font-weight:800}.kpi .l{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  .meter{height:10px;border-radius:999px;background:var(--line);overflow:hidden;margin-top:8px}.meter>i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--brand2))}
   label{display:block;font-size:12px;color:var(--mut);margin:8px 0 4px}
-  input,button{font:inherit}
-  input{width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--txt)}
+  input,button,textarea{font:inherit}
+  input,textarea{width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--txt)}
   button{cursor:pointer;border:0;border-radius:9px;padding:10px 16px;font-weight:700;color:#fff;background:var(--brand)}
   button.sec{background:transparent;color:var(--txt);border:1px solid var(--line)}
   button:disabled{opacity:.5;cursor:not-allowed}
   table{width:100%;border-collapse:collapse;font-size:13px}
-  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
-  th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase}
   .scroll{overflow-x:auto}
   .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
   .pill{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--mut)}
-  .pill.aceite{color:var(--brand2);border-color:var(--brand2)}
-  .pill.recusa{color:var(--danger);border-color:var(--danger)}
-  .pill.handoff_humano{color:var(--warn);border-color:var(--warn)}
+  .pill.aceite{color:var(--brand2);border-color:var(--brand2)}.pill.recusa{color:var(--danger);border-color:var(--danger)}.pill.handoff_humano{color:var(--warn);border-color:var(--warn)}
   .aviso{background:rgba(232,163,61,.12);border:1px solid var(--warn);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:10px}
   .erro{background:rgba(229,72,77,.12);border:1px solid var(--danger);color:var(--danger);border-radius:10px;padding:10px 12px;font-size:13px}
   .muted{color:var(--mut)}
   .out{white-space:pre-wrap;font-family:ui-monospace,monospace;font-size:12px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px;margin-top:10px}
-  /* login */
   #loginView{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-  .loginbox{width:100%;max-width:380px}
-  .loginbox h1{margin-bottom:4px}
+  .loginbox{width:100%;max-width:380px}.loginbox h1{margin-bottom:4px}
   .hidden{display:none !important}
+  .tabs{display:flex;gap:8px;margin-bottom:16px}
+  .tab{padding:8px 14px;border-radius:9px;border:1px solid var(--line);background:transparent;color:var(--mut);cursor:pointer;font-weight:600}
+  .tab.active{background:var(--card);color:var(--txt);border-color:var(--brand2)}
+  .chat{display:grid;grid-template-columns:300px 1fr;gap:12px;height:70vh;min-height:440px}
+  @media(max-width:760px){.chat{grid-template-columns:1fr;height:auto}}
+  .convlist{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow-y:auto}
+  .convitem{padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+  .convitem:hover{background:rgba(127,127,127,.06)}.convitem.sel{background:rgba(46,193,107,.10)}
+  .convitem .top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+  .convitem .nm{font-weight:700;font-size:13px}.convitem .pv{color:var(--mut);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .thread{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;min-height:440px}
+  .thead{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .tbody{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
+  .bubble{max-width:78%;padding:8px 12px;border-radius:12px;font-size:14px;white-space:pre-wrap;word-break:break-word}
+  .bubble.in{align-self:flex-start;background:var(--bg);border:1px solid var(--line)}
+  .bubble.out{align-self:flex-end;background:rgba(46,193,107,.15);border:1px solid var(--brand2)}
+  .bubble .meta{font-size:10px;color:var(--mut);margin-top:4px}
+  .reply{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+  .reply textarea{min-height:44px;max-height:120px;resize:vertical}
+  .center{flex:1;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:14px;text-align:center;padding:20px}
 </style>
 </head>
 <body>
 
-<!-- ===== LOGIN ===== -->
 <div id="loginView">
   <div class="loginbox">
     <h1>Valenet CRM</h1>
@@ -73,180 +82,202 @@
   </div>
 </div>
 
-<!-- ===== APP ===== -->
 <div id="appView" class="hidden">
   <div class="wrap">
     <header>
       <div>
         <h1>Valenet CRM — Fidelização</h1>
-        <div class="sub">Oferta +200MB por R$12,90 · painel + disparo via WhatsApp</div>
+        <div class="sub">Oferta +200MB por R$12,90 · painel + WhatsApp</div>
       </div>
       <div class="row" style="align-items:center">
         <span class="sub" id="quemSou"></span>
-        <span id="modeBadge" class="badge sim">carregando…</span>
+        <span id="modeBadge" class="badge sim">…</span>
         <button class="sec" id="btnLogout" style="padding:6px 12px">Sair</button>
       </div>
     </header>
 
-    <div id="avisos"></div>
-    <div class="grid" id="kpis"></div>
-
-    <div class="card">
-      <strong>Taxa de aceite</strong>
-      <div class="sub" id="taxaTxt" style="margin:4px 0">—</div>
-      <div class="meter"><i id="taxaBar" style="width:0%"></i></div>
-      <div class="sub" style="margin-top:6px">Meta do sprint: <b>20%</b></div>
+    <div class="tabs">
+      <button class="tab active" data-tab="campanha" id="tabBtnCampanha">Campanha</button>
+      <button class="tab" data-tab="conversas" id="tabBtnConversas">Conversas</button>
     </div>
 
-    <div class="card">
-      <div class="row" style="justify-content:space-between">
-        <div>
-          <strong>Disparar HSM</strong>
-          <div class="sub" id="disparoHint">Reserva um lote de elegíveis ainda não contatados e envia (ou simula).</div>
+    <!-- ===== CAMPANHA ===== -->
+    <div id="tabCampanha">
+      <div id="avisos"></div>
+      <div class="grid" id="kpis"></div>
+      <div class="card">
+        <strong>Taxa de aceite</strong>
+        <div class="sub" id="taxaTxt" style="margin:4px 0">—</div>
+        <div class="meter"><i id="taxaBar" style="width:0%"></i></div>
+        <div class="sub" style="margin-top:6px">Meta do sprint: <b>20%</b></div>
+      </div>
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <div><strong>Disparar HSM</strong><div class="sub" id="disparoHint">Reserva um lote de elegíveis e envia (ou simula).</div></div>
+          <div class="row">
+            <div style="width:120px"><label>Limite do lote</label><input id="limite" type="number" value="25" min="1" max="200" /></div>
+            <div style="align-self:flex-end"><button id="btnDisparar">Disparar lote</button></div>
+          </div>
         </div>
-        <div class="row">
-          <div style="width:120px"><label>Limite do lote</label><input id="limite" type="number" value="25" min="1" max="200" /></div>
-          <div style="align-self:flex-end"><button id="btnDisparar">Disparar lote</button></div>
+        <div id="disparoOut" class="out" style="display:none"></div>
+      </div>
+      <div class="card">
+        <strong>Elegíveis (preview)</strong> <span class="muted" id="elegCount"></span>
+        <div class="scroll"><table id="elegTbl"><thead><tr><th>Cliente</th><th>Cidade</th><th>Banda</th><th>Meses vig.</th><th>Total</th><th>Telefone</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <div class="card">
+        <strong>Resultados recentes</strong>
+        <div class="scroll"><table id="resTbl"><thead><tr><th>Cliente</th><th>Telefone</th><th>Status</th><th>Resposta</th><th>Sim?</th><th>Disparo</th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ===== CONVERSAS ===== -->
+    <div id="tabConversas" class="hidden">
+      <div class="chat">
+        <div class="convlist" id="convList"><div class="center">Carregando…</div></div>
+        <div class="thread">
+          <div class="thead">
+            <div><strong id="convNome">Selecione uma conversa</strong><div class="sub" id="convTel"></div></div>
+            <span id="convJanela" class="badge fechada hidden"></span>
+          </div>
+          <div class="tbody" id="convBody"><div class="center">Escolha uma conversa à esquerda para ver o histórico e responder.</div></div>
+          <div class="reply" id="replyBox" style="display:none">
+            <textarea id="replyText" placeholder="Escreva uma resposta…"></textarea>
+            <button id="btnEnviar" style="align-self:stretch">Enviar</button>
+          </div>
+          <div class="janfechada hidden" id="janAviso"></div>
         </div>
       </div>
-      <div id="disparoOut" class="out" style="display:none"></div>
     </div>
 
-    <div class="card">
-      <strong>Elegíveis (preview)</strong> <span class="muted" id="elegCount"></span>
-      <div class="scroll"><table id="elegTbl"><thead><tr>
-        <th>Cliente</th><th>Cidade</th><th>Banda</th><th>Meses vig.</th><th>Total</th><th>Telefone</th>
-      </tr></thead><tbody></tbody></table></div>
-    </div>
-
-    <div class="card">
-      <strong>Resultados recentes</strong>
-      <div class="scroll"><table id="resTbl"><thead><tr>
-        <th>Cliente</th><th>Telefone</th><th>Status</th><th>Resposta</th><th>Sim?</th><th>Disparo</th>
-      </tr></thead><tbody></tbody></table></div>
-    </div>
   </div>
 </div>
 
 <script>
-// ==== Config pública (anon key é pública por natureza; nenhum segredo aqui) ====
-const SB   = "https://xijxklmnhoywlqqdxwvr.supabase.co";
-const ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpanhrbG1uaG95d2xxcWR4d3ZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3ODUyNTgsImV4cCI6MjA5OTM2MTI1OH0.Jl7zsabGG1423BQLEDWj1TXB1of10uqD2owjIkMrtWc";
-const FN   = SB + "/functions/v1";
-const LS   = "valenet_session";
+const SB="https://xijxklmnhoywlqqdxwvr.supabase.co";
+const ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpanhrbG1uaG95d2xxcWR4d3ZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3ODUyNTgsImV4cCI6MjA5OTM2MTI1OH0.Jl7zsabGG1423BQLEDWj1TXB1of10uqD2owjIkMrtWc";
+const FN=SB+"/functions/v1"; const LS="valenet_session";
+const $=(s)=>document.querySelector(s);
+function getSession(){try{return JSON.parse(localStorage.getItem(LS)||"null")}catch{return null}}
+function setSession(s){localStorage.setItem(LS,JSON.stringify(s))}
+function clearSession(){localStorage.removeItem(LS)}
+function esc(s){return String(s??"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}
+function num(x){return (x==null?0:x).toLocaleString("pt-BR")}
+function hora(t){return t?new Date(t).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):""}
 
-const $ = (s)=>document.querySelector(s);
-function getSession(){ try{return JSON.parse(localStorage.getItem(LS)||"null")}catch{return null} }
-function setSession(s){ localStorage.setItem(LS, JSON.stringify(s)); }
-function clearSession(){ localStorage.removeItem(LS); }
-function esc(s){ return String(s??"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
-function num(x){ return (x==null?0:x).toLocaleString("pt-BR"); }
-
-function saveFromAuth(d){
-  setSession({ access_token:d.access_token, refresh_token:d.refresh_token, email:(d.user&&d.user.email)||getSession()?.email||"" });
+function saveFromAuth(d){setSession({access_token:d.access_token,refresh_token:d.refresh_token,email:(d.user&&d.user.email)||getSession()?.email||""})}
+async function login(email,password){
+  const r=await fetch(`${SB}/auth/v1/token?grant_type=password`,{method:"POST",headers:{apikey:ANON,"content-type":"application/json"},body:JSON.stringify({email,password})});
+  const d=await r.json().catch(()=>({})); if(!r.ok) throw new Error(d.error_description||d.msg||d.error||"e-mail ou senha inválidos"); saveFromAuth(d);
 }
-async function login(email, password){
-  const r = await fetch(`${SB}/auth/v1/token?grant_type=password`, {
-    method:"POST", headers:{ apikey:ANON, "content-type":"application/json" },
-    body: JSON.stringify({ email, password })
-  });
-  const d = await r.json().catch(()=>({}));
-  if(!r.ok) throw new Error(d.error_description || d.msg || d.error || "e-mail ou senha inválidos");
-  saveFromAuth(d);
+async function refreshToken(){const s=getSession();if(!s||!s.refresh_token)return false;
+  try{const r=await fetch(`${SB}/auth/v1/token?grant_type=refresh_token`,{method:"POST",headers:{apikey:ANON,"content-type":"application/json"},body:JSON.stringify({refresh_token:s.refresh_token})});if(!r.ok)return false;saveFromAuth(await r.json());return true}catch{return false}}
+function logout(){stopPoll();clearSession();showLogin()}
+async function api(path,opts={},retried=false){
+  const s=getSession();
+  const r=await fetch(FN+path,{...opts,headers:{Authorization:"Bearer "+((s&&s.access_token)||""),"content-type":"application/json",...(opts.headers||{})}});
+  if(r.status===401&&!retried){if(await refreshToken())return api(path,opts,true);logout();throw new Error("sessão expirada — faça login novamente")}
+  const data=await r.json().catch(()=>({})); if(!r.ok) throw new Error(data.erro||("HTTP "+r.status)); return data;
 }
-async function refreshToken(){
-  const s = getSession(); if(!s||!s.refresh_token) return false;
-  try{
-    const r = await fetch(`${SB}/auth/v1/token?grant_type=refresh_token`, {
-      method:"POST", headers:{ apikey:ANON, "content-type":"application/json" },
-      body: JSON.stringify({ refresh_token: s.refresh_token })
-    });
-    if(!r.ok) return false;
-    saveFromAuth(await r.json()); return true;
-  }catch{ return false; }
+function showLogin(){$("#appView").classList.add("hidden");$("#loginView").classList.remove("hidden")}
+function showApp(){$("#loginView").classList.add("hidden");$("#appView").classList.remove("hidden");$("#quemSou").textContent=getSession()?.email||""}
+
+// ===== abas =====
+let abaAtual="campanha";
+function showTab(t){
+  abaAtual=t;
+  $("#tabCampanha").classList.toggle("hidden",t!=="campanha");
+  $("#tabConversas").classList.toggle("hidden",t!=="conversas");
+  $("#tabBtnCampanha").classList.toggle("active",t==="campanha");
+  $("#tabBtnConversas").classList.toggle("active",t==="conversas");
+  if(t==="conversas"){ loadConversas(); startPoll(); } else { stopPoll(); }
 }
-function logout(){ clearSession(); showLogin(); }
+$("#tabBtnCampanha").onclick=()=>showTab("campanha");
+$("#tabBtnConversas").onclick=()=>showTab("conversas");
 
-async function api(path, opts={}, retried=false){
-  const s = getSession();
-  const r = await fetch(FN + path, { ...opts, headers:{ Authorization:"Bearer "+((s&&s.access_token)||""), "content-type":"application/json", ...(opts.headers||{}) }});
-  if(r.status===401 && !retried){
-    if(await refreshToken()) return api(path, opts, true);
-    logout(); throw new Error("sessão expirada — faça login novamente");
-  }
-  const data = await r.json().catch(()=>({}));
-  if(!r.ok) throw new Error(data.erro || ("HTTP "+r.status));
-  return data;
-}
-
-function showLogin(){ $("#appView").classList.add("hidden"); $("#loginView").classList.remove("hidden"); }
-function showApp(){ $("#loginView").classList.add("hidden"); $("#appView").classList.remove("hidden"); $("#quemSou").textContent = getSession()?.email || ""; }
-
+// ===== campanha =====
 async function refresh(){
   try{
-    const d = await api("/painel-dados", {method:"POST", body:"{}"});
-    const modo = (d.config&&d.config.modo) || "simulation";
-    const badge = $("#modeBadge");
-    badge.className = "badge " + (modo==="live"?"live":"sim");
-    badge.textContent = modo==="live" ? "MODO LIVE" : "SIMULAÇÃO";
-    $("#disparoHint").textContent = modo==="live" ? "LIVE: mensagens reais serão enviadas via WhatsApp." : "SIMULAÇÃO: nenhuma mensagem real é enviada.";
-    $("#avisos").innerHTML = (d.avisos||[]).map(a=>`<div class="aviso">⚠️ ${esc(a)}</div>`).join("");
-    const f = d.funil||{};
-    $("#kpis").innerHTML = [["Base",f.base_total],["Elegíveis",f.elegiveis],["Disparados",f.disparados],["Aceitos",f.aceitos],["Recusas",f.recusas],["Sem resposta",f.sem_resposta],["Handoff",f.handoff_humano]]
-      .map(([l,n])=>`<div class="kpi"><div class="n">${num(n)}</div><div class="l">${l}</div></div>`).join("");
-    const taxa = Number(f.taxa_aceite_pct||0);
-    $("#taxaTxt").innerHTML = `<b style="font-size:20px">${taxa}%</b> de aceite sobre disparados`;
-    $("#taxaBar").style.width = Math.min(100,(taxa/20)*100) + "%";
-    $("#elegCount").textContent = "("+num((d.elegiveis||[]).length)+" mostrando, máx 100)";
-    $("#elegTbl tbody").innerHTML = (d.elegiveis||[]).map(e=>`<tr>
-      <td>${esc(e.nome)}<div class="muted">#${esc(e.codcliente)}</div></td>
-      <td>${esc(e.cidade)}</td><td>${esc(e.banda)}</td><td>${esc(e.meses_vigencia)}</td>
-      <td>R$ ${esc(e.total_mensal)}</td><td class="muted">${esc(e.telefone_mascarado)}</td></tr>`).join("");
-    $("#resTbl tbody").innerHTML = (d.recentes||[]).map(r=>`<tr>
-      <td>#${esc(r.codcliente)}</td><td class="muted">${esc(r.telefone_mascarado)}</td>
-      <td>${esc(r.status_disparo)}</td>
-      <td>${r.resposta?`<span class="pill ${esc(r.resposta)}">${esc(r.resposta)}</span>`:'<span class="muted">—</span>'}</td>
-      <td>${r.simulado?'<span class="pill">simulado</span>':''}</td>
-      <td class="muted">${r.data_disparo?new Date(r.data_disparo).toLocaleString("pt-BR"):"—"}</td></tr>`).join("");
-  }catch(e){
-    $("#avisos").innerHTML = `<div class="erro">Erro ao carregar: ${esc(e.message)}</div>`;
-  }
+    const d=await api("/painel-dados",{method:"POST",body:"{}"});
+    const modo=(d.config&&d.config.modo)||"simulation";
+    const b=$("#modeBadge");b.className="badge "+(modo==="live"?"live":"sim");b.textContent=modo==="live"?"MODO LIVE":"SIMULAÇÃO";
+    $("#disparoHint").textContent=modo==="live"?"LIVE: mensagens reais serão enviadas.":"SIMULAÇÃO: nenhuma mensagem real é enviada.";
+    $("#avisos").innerHTML=(d.avisos||[]).map(a=>`<div class="aviso">⚠️ ${esc(a)}</div>`).join("");
+    const f=d.funil||{};
+    $("#kpis").innerHTML=[["Base",f.base_total],["Elegíveis",f.elegiveis],["Disparados",f.disparados],["Aceitos",f.aceitos],["Recusas",f.recusas],["Sem resposta",f.sem_resposta],["Handoff",f.handoff_humano]].map(([l,n])=>`<div class="kpi"><div class="n">${num(n)}</div><div class="l">${l}</div></div>`).join("");
+    const taxa=Number(f.taxa_aceite_pct||0);$("#taxaTxt").innerHTML=`<b style="font-size:20px">${taxa}%</b> de aceite sobre disparados`;$("#taxaBar").style.width=Math.min(100,(taxa/20)*100)+"%";
+    $("#elegCount").textContent="("+num((d.elegiveis||[]).length)+" mostrando)";
+    $("#elegTbl tbody").innerHTML=(d.elegiveis||[]).map(e=>`<tr><td>${esc(e.nome)}<div class="muted">#${esc(e.codcliente)}</div></td><td>${esc(e.cidade)}</td><td>${esc(e.banda)}</td><td>${esc(e.meses_vigencia)}</td><td>R$ ${esc(e.total_mensal)}</td><td class="muted">${esc(e.telefone_mascarado)}</td></tr>`).join("");
+    $("#resTbl tbody").innerHTML=(d.recentes||[]).map(r=>`<tr><td>#${esc(r.codcliente)}</td><td class="muted">${esc(r.telefone_mascarado)}</td><td>${esc(r.status_disparo)}</td><td>${r.resposta?`<span class="pill ${esc(r.resposta)}">${esc(r.resposta)}</span>`:'<span class="muted">—</span>'}</td><td>${r.simulado?'<span class="pill">simulado</span>':''}</td><td class="muted">${hora(r.data_disparo)}</td></tr>`).join("");
+  }catch(e){$("#avisos").innerHTML=`<div class="erro">Erro: ${esc(e.message)}</div>`}
 }
-
-// ==== eventos ====
-$("#btnLogin").onclick = async ()=>{
-  const b=$("#btnLogin"), err=$("#loginErro");
-  err.classList.add("hidden");
-  b.disabled=true; b.textContent="Entrando…";
-  try{
-    await login($("#email").value.trim(), $("#password").value);
-    showApp(); refresh();
-  }catch(e){ err.textContent = e.message; err.classList.remove("hidden"); }
-  finally{ b.disabled=false; b.textContent="Entrar"; }
-};
-$("#password").addEventListener("keydown", e=>{ if(e.key==="Enter") $("#btnLogin").click(); });
-$("#btnLogout").onclick = logout;
-
-$("#btnDisparar").onclick = async ()=>{
-  const btn=$("#btnDisparar"), out=$("#disparoOut");
-  const limite = Number($("#limite").value)||25;
-  const live = $("#modeBadge").textContent.includes("LIVE");
-  const msg = live ? `MODO LIVE: vai ENVIAR mensagens reais para até ${limite} clientes. Confirmar?` : `Simular disparo para até ${limite} elegíveis?`;
-  if(!confirm(msg)) return;
-  btn.disabled=true; out.style.display="block"; out.textContent="Disparando…";
-  try{
-    const r = await api("/disparar-hsm", {method:"POST", body:JSON.stringify({limite})});
-    out.textContent = `Modo: ${r.modo}\nReservados: ${r.reservados}\nEnviados: ${r.enviados}\nFalhas: ${r.falhas}`;
-    refresh();
-  }catch(e){ out.textContent = "Erro: "+e.message; }
-  finally{ btn.disabled=false; }
+$("#btnDisparar").onclick=async()=>{
+  const btn=$("#btnDisparar"),out=$("#disparoOut");const limite=Number($("#limite").value)||25;
+  const live=$("#modeBadge").textContent.includes("LIVE");
+  if(!confirm(live?`MODO LIVE: enviar mensagens reais para até ${limite} clientes?`:`Simular disparo para até ${limite} elegíveis?`))return;
+  btn.disabled=true;out.style.display="block";out.textContent="Disparando…";
+  try{const r=await api("/disparar-hsm",{method:"POST",body:JSON.stringify({limite})});out.textContent=`Modo: ${r.modo}\nReservados: ${r.reservados}\nEnviados: ${r.enviados}\nFalhas: ${r.falhas}`;refresh();}
+  catch(e){out.textContent="Erro: "+e.message}finally{btn.disabled=false}
 };
 
-// ==== inicialização ====
-(function init(){
-  if(getSession()?.access_token){ showApp(); refresh(); }
-  else showLogin();
-})();
+// ===== conversas (chat) =====
+let convAtual=null, convJanela=false, pollTimer=null, convCache=[];
+async function loadConversas(){
+  try{
+    const d=await api("/painel-conversas",{method:"POST",body:"{}"});
+    convCache=d.conversas||[];
+    if(!convCache.length){$("#convList").innerHTML='<div class="center">Nenhuma conversa ainda.<br>Elas aparecem quando um cliente responde.</div>';return;}
+    $("#convList").innerHTML=convCache.map(c=>{
+      const nome=c.nome||("+"+esc(c.telefone_canon));
+      const jb=c.janela_aberta?'<span class="badge aberta" style="font-size:10px;padding:1px 7px">24h</span>':'';
+      const pv=(c.ultima_direcao==="out"?"você: ":"")+(c.ultima_texto||"");
+      return `<div class="convitem ${c.telefone_canon===convAtual?'sel':''}" data-tel="${esc(c.telefone_canon)}" data-jan="${c.janela_aberta?1:0}">
+        <div class="top"><span class="nm">${esc(nome)}</span>${jb}</div>
+        <div class="pv">${esc(pv)}</div>
+        <div class="pv">${hora(c.ultima_em)}</div></div>`;
+    }).join("");
+    $("#convList").querySelectorAll(".convitem").forEach(el=>el.onclick=()=>openConversa(el.dataset.tel, el.dataset.jan==="1"));
+  }catch(e){$("#convList").innerHTML=`<div class="center">Erro: ${esc(e.message)}</div>`}
+}
+async function openConversa(tel, janela){
+  convAtual=tel; convJanela=janela;
+  const c=convCache.find(x=>x.telefone_canon===tel)||{};
+  $("#convNome").textContent=c.nome||("+"+tel);
+  $("#convTel").textContent="+"+tel+(c.codcliente?(" · cliente #"+c.codcliente):"");
+  const jb=$("#convJanela");jb.classList.remove("hidden");
+  jb.className="badge "+(janela?"aberta":"fechada");jb.textContent=janela?"janela 24h aberta":"janela fechada";
+  $("#convList").querySelectorAll(".convitem").forEach(el=>el.classList.toggle("sel",el.dataset.tel===tel));
+  // caixa de resposta conforme a janela
+  if(janela){$("#replyBox").style.display="flex";$("#janAviso").classList.add("hidden");}
+  else{$("#replyBox").style.display="none";$("#janAviso").classList.remove("hidden");$("#janAviso").textContent="Janela de 24h fechada — o WhatsApp só permite texto livre até 24h após a última mensagem do cliente. Fora disso, use um template (HSM).";}
+  await loadThread();
+}
+async function loadThread(){
+  if(!convAtual)return;
+  try{
+    const d=await api("/painel-conversas",{method:"POST",body:JSON.stringify({telefone:convAtual})});
+    const body=$("#convBody");
+    body.innerHTML=(d.mensagens||[]).map(m=>`<div class="bubble ${m.direcao==="in"?"in":"out"}">${esc(m.texto)}<div class="meta">${m.direcao==="out"?(esc(m.operador||"você")+" · "):""}${esc(m.status||"")}${m.simulado?" · simulado":""} · ${hora(m.criado_em)}</div></div>`).join("")||'<div class="center">Sem mensagens.</div>';
+    body.scrollTop=body.scrollHeight;
+  }catch(e){$("#convBody").innerHTML=`<div class="center">Erro: ${esc(e.message)}</div>`}
+}
+$("#btnEnviar").onclick=async()=>{
+  const ta=$("#replyText"),btn=$("#btnEnviar");const texto=ta.value.trim();
+  if(!texto||!convAtual)return;
+  btn.disabled=true;
+  try{await api("/enviar-mensagem",{method:"POST",body:JSON.stringify({telefone:convAtual,texto})});ta.value="";await loadThread();loadConversas();}
+  catch(e){alert("Não enviou: "+e.message);}finally{btn.disabled=false}
+};
+$("#replyText")?.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("#btnEnviar").click();}});
+function startPoll(){stopPoll();pollTimer=setInterval(()=>{if(abaAtual==="conversas"){loadConversas();if(convAtual)loadThread();}},7000);}
+function stopPoll(){if(pollTimer){clearInterval(pollTimer);pollTimer=null;}}
+
+// ===== login / init =====
+$("#btnLogin").onclick=async()=>{const b=$("#btnLogin"),err=$("#loginErro");err.classList.add("hidden");b.disabled=true;b.textContent="Entrando…";
+  try{await login($("#email").value.trim(),$("#password").value);showApp();refresh();}catch(e){err.textContent=e.message;err.classList.remove("hidden");}finally{b.disabled=false;b.textContent="Entrar";}};
+$("#password").addEventListener("keydown",e=>{if(e.key==="Enter")$("#btnLogin").click()});
+$("#btnLogout").onclick=logout;
+(function init(){ if(getSession()?.access_token){showApp();refresh();} else showLogin(); })();
 </script>
 </body>
 </html>
