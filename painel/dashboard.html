@@ -199,9 +199,10 @@ $("#tabBtnConversas").onclick=()=>showTab("conversas");
 async function refresh(){
   try{
     const d=await api("/painel-dados",{method:"POST",body:"{}"});
-    const modo=(d.config&&d.config.modo)||"simulation";
-    const b=$("#modeBadge");b.className="badge "+(modo==="live"?"live":"sim");b.textContent=modo==="live"?"MODO LIVE":"SIMULAÇÃO";
-    $("#disparoHint").textContent=modo==="live"?"LIVE: mensagens reais serão enviadas.":"SIMULAÇÃO: nenhuma mensagem real é enviada.";
+    const cfg=d.config||{}; window._cfg=cfg;
+    const modo=cfg.modo||"simulation";
+    const b=$("#modeBadge");b.className="badge "+(modo==="live"?"live":"sim");b.textContent=modo==="live"?"CHAT LIVE":"SIMULAÇÃO";
+    $("#disparoHint").textContent=cfg.campanha_live?"Campanha LIVE: envia templates reais.":"Campanha em SIMULAÇÃO (envio real travado).";
     $("#avisos").innerHTML=(d.avisos||[]).map(a=>`<div class="aviso">⚠️ ${esc(a)}</div>`).join("");
     const f=d.funil||{};
     $("#kpis").innerHTML=[["Base",f.base_total],["Elegíveis",f.elegiveis],["Disparados",f.disparados],["Aceitos",f.aceitos],["Recusas",f.recusas],["Sem resposta",f.sem_resposta],["Handoff",f.handoff_humano]].map(([l,n])=>`<div class="kpi"><div class="n">${num(n)}</div><div class="l">${l}</div></div>`).join("");
@@ -213,8 +214,8 @@ async function refresh(){
 }
 $("#btnDisparar").onclick=async()=>{
   const btn=$("#btnDisparar"),out=$("#disparoOut");const limite=Number($("#limite").value)||25;
-  const live=$("#modeBadge").textContent.includes("LIVE");
-  if(!confirm(live?`MODO LIVE: enviar mensagens reais para até ${limite} clientes?`:`Simular disparo para até ${limite} elegíveis?`))return;
+  const live=!!(window._cfg&&window._cfg.campanha_live);
+  if(!confirm(live?`CAMPANHA LIVE: enviar templates reais para até ${limite} clientes. Confirmar?`:`Simular disparo para até ${limite} elegíveis?`))return;
   btn.disabled=true;out.style.display="block";out.textContent="Disparando…";
   try{const r=await api("/disparar-hsm",{method:"POST",body:JSON.stringify({limite})});out.textContent=`Modo: ${r.modo}\nReservados: ${r.reservados}\nEnviados: ${r.enviados}\nFalhas: ${r.falhas}`;refresh();}
   catch(e){out.textContent="Erro: "+e.message}finally{btn.disabled=false}

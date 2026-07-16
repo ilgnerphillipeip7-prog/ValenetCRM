@@ -10,6 +10,9 @@ const WA_TOKEN = Deno.env.get("WHATSAPP_TOKEN") ?? "";
 const WA_PHONE_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID") ?? "";
 const WA_TEMPLATE = Deno.env.get("WHATSAPP_TEMPLATE_NAME") ?? "";
 const WA_LANG = Deno.env.get("WHATSAPP_TEMPLATE_LANG") ?? "pt_BR";
+// Trava extra do disparo EM MASSA: mesmo com DISPATCH_MODE=live, só envia de verdade
+// se CAMPANHA_LIVE=true. Protege contra disparo acidental na base (ex.: dados de teste).
+const CAMPANHA_LIVE = (Deno.env.get("CAMPANHA_LIVE") ?? "").toLowerCase() === "true";
 const GRAPH = "https://graph.facebook.com/v21.0";
 
 const cors: Record<string, string> = {
@@ -56,7 +59,7 @@ Deno.serve(async (req) => {
   limite = Math.min(limite, 200);
 
   const waReady = !!(WA_TOKEN && WA_PHONE_ID && WA_TEMPLATE);
-  const modo = (MODE === "live" && waReady) ? "live" : "simulation";
+  const modo = (MODE === "live" && waReady && CAMPANHA_LIVE) ? "live" : "simulation";
 
   let lote: any[] = [];
   try {
