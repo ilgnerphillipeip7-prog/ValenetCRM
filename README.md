@@ -25,9 +25,9 @@ vercel.json                    # rewrite: "/" -> painel/dashboard.html
 2. Em **vercel.com/new**, importe `ilgnerphillipeip7-prog/ValenetCRM`.
 3. **Framework Preset: Other** (é estático, sem build). Deixe build/output vazios.
 4. Deploy. A `vercel.json` faz `/` abrir o painel.
-5. Abra a URL da Vercel, cole a **URL base** das Edge Functions e o **PANEL_TOKEN** (valores em `supabase.local.env`) e clique em "Salvar e carregar".
+5. Abra a URL da Vercel e **faça login** com seu e-mail e senha de operador. O dashboard aparece após o login.
 
-> O painel **não** embute segredos: o `PANEL_TOKEN` é digitado pelo operador e fica só no `localStorage` do navegador. As Edge Functions rejeitam (401) qualquer chamada sem o token.
+> Acesso por **login (Supabase Auth)**: só e-mails na allowlist `OPERADORES` (secret no Supabase) entram; as Edge Functions rejeitam (401) quem não está logado ou não é operador. Nenhum segredo fica no front (só a *anon key*, que é pública por natureza). A sessão expira sozinha.
 
 ## Backend (Supabase, já implantado)
 

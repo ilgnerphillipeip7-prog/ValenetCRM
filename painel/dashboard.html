@@ -30,7 +30,7 @@
   .meter>i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--brand2))}
   label{display:block;font-size:12px;color:var(--mut);margin:8px 0 4px}
   input,button{font:inherit}
-  input{width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--txt)}
+  input{width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--txt)}
   button{cursor:pointer;border:0;border-radius:9px;padding:10px 16px;font-weight:700;color:#fff;background:var(--brand)}
   button.sec{background:transparent;color:var(--txt);border:1px solid var(--line)}
   button:disabled{opacity:.5;cursor:not-allowed}
@@ -44,131 +44,164 @@
   .pill.recusa{color:var(--danger);border-color:var(--danger)}
   .pill.handoff_humano{color:var(--warn);border-color:var(--warn)}
   .aviso{background:rgba(232,163,61,.12);border:1px solid var(--warn);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:10px}
+  .erro{background:rgba(229,72,77,.12);border:1px solid var(--danger);color:var(--danger);border-radius:10px;padding:10px 12px;font-size:13px}
   .muted{color:var(--mut)}
   .out{white-space:pre-wrap;font-family:ui-monospace,monospace;font-size:12px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px;margin-top:10px}
+  /* login */
+  #loginView{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+  .loginbox{width:100%;max-width:380px}
+  .loginbox h1{margin-bottom:4px}
+  .hidden{display:none !important}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div>
-      <h1>Valenet CRM — Fidelização</h1>
-      <div class="sub">Oferta +200MB por R$12,90 · painel + disparo via WhatsApp</div>
+
+<!-- ===== LOGIN ===== -->
+<div id="loginView">
+  <div class="loginbox">
+    <h1>Valenet CRM</h1>
+    <div class="sub" style="margin-bottom:16px">Fidelização — acesso restrito</div>
+    <div class="card">
+      <label>E-mail</label>
+      <input id="email" type="email" autocomplete="username" placeholder="voce@valenet.com.br" />
+      <label>Senha</label>
+      <input id="password" type="password" autocomplete="current-password" placeholder="sua senha" />
+      <button id="btnLogin" style="width:100%;margin-top:14px">Entrar</button>
+      <div id="loginErro" class="erro hidden" style="margin-top:12px"></div>
     </div>
-    <div id="modeBadge" class="badge sim">carregando…</div>
-  </header>
-
-  <div class="card" id="cfgCard">
-    <strong>Conexão</strong>
-    <div class="sub" style="margin:4px 0 8px">Preenchido uma vez; fica salvo neste navegador (localStorage).</div>
-    <div class="row">
-      <div style="flex:2;min-width:260px">
-        <label>URL base das Edge Functions</label>
-        <input id="baseUrl" placeholder="https://SEU-REF.supabase.co/functions/v1" />
-      </div>
-      <div style="flex:2;min-width:220px">
-        <label>Panel token</label>
-        <input id="panelToken" type="password" placeholder="cole o PANEL_TOKEN" />
-      </div>
-      <div><button id="saveCfg" class="sec">Salvar e carregar</button></div>
-    </div>
+    <div class="sub" style="text-align:center">Não tem acesso? Fale com o administrador do sistema.</div>
   </div>
+</div>
 
-  <div id="avisos"></div>
-
-  <div class="grid" id="kpis"></div>
-
-  <div class="card">
-    <strong>Taxa de aceite</strong>
-    <div class="sub" id="taxaTxt" style="margin:4px 0">—</div>
-    <div class="meter"><i id="taxaBar" style="width:0%"></i></div>
-    <div class="sub" style="margin-top:6px">Meta do sprint: <b>20%</b></div>
-  </div>
-
-  <div class="card">
-    <div class="row" style="justify-content:space-between">
+<!-- ===== APP ===== -->
+<div id="appView" class="hidden">
+  <div class="wrap">
+    <header>
       <div>
-        <strong>Disparar HSM</strong>
-        <div class="sub" id="disparoHint">Reserva um lote de elegíveis ainda não contatados e envia (ou simula).</div>
+        <h1>Valenet CRM — Fidelização</h1>
+        <div class="sub">Oferta +200MB por R$12,90 · painel + disparo via WhatsApp</div>
       </div>
-      <div class="row">
-        <div style="width:120px"><label>Limite do lote</label><input id="limite" type="number" value="25" min="1" max="200" /></div>
-        <div style="align-self:flex-end"><button id="btnDisparar">Disparar lote</button></div>
+      <div class="row" style="align-items:center">
+        <span class="sub" id="quemSou"></span>
+        <span id="modeBadge" class="badge sim">carregando…</span>
+        <button class="sec" id="btnLogout" style="padding:6px 12px">Sair</button>
       </div>
+    </header>
+
+    <div id="avisos"></div>
+    <div class="grid" id="kpis"></div>
+
+    <div class="card">
+      <strong>Taxa de aceite</strong>
+      <div class="sub" id="taxaTxt" style="margin:4px 0">—</div>
+      <div class="meter"><i id="taxaBar" style="width:0%"></i></div>
+      <div class="sub" style="margin-top:6px">Meta do sprint: <b>20%</b></div>
     </div>
-    <div id="disparoOut" class="out" style="display:none"></div>
-  </div>
 
-  <div class="card">
-    <strong>Elegíveis (preview)</strong> <span class="muted" id="elegCount"></span>
-    <div class="scroll"><table id="elegTbl"><thead><tr>
-      <th>Cliente</th><th>Cidade</th><th>Banda</th><th>Meses vig.</th><th>Total</th><th>Telefone</th>
-    </tr></thead><tbody></tbody></table></div>
-  </div>
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <strong>Disparar HSM</strong>
+          <div class="sub" id="disparoHint">Reserva um lote de elegíveis ainda não contatados e envia (ou simula).</div>
+        </div>
+        <div class="row">
+          <div style="width:120px"><label>Limite do lote</label><input id="limite" type="number" value="25" min="1" max="200" /></div>
+          <div style="align-self:flex-end"><button id="btnDisparar">Disparar lote</button></div>
+        </div>
+      </div>
+      <div id="disparoOut" class="out" style="display:none"></div>
+    </div>
 
-  <div class="card">
-    <strong>Resultados recentes</strong>
-    <div class="scroll"><table id="resTbl"><thead><tr>
-      <th>Cliente</th><th>Telefone</th><th>Status</th><th>Resposta</th><th>Sim?</th><th>Disparo</th>
-    </tr></thead><tbody></tbody></table></div>
-  </div>
+    <div class="card">
+      <strong>Elegíveis (preview)</strong> <span class="muted" id="elegCount"></span>
+      <div class="scroll"><table id="elegTbl"><thead><tr>
+        <th>Cliente</th><th>Cidade</th><th>Banda</th><th>Meses vig.</th><th>Total</th><th>Telefone</th>
+      </tr></thead><tbody></tbody></table></div>
+    </div>
 
-  <div class="sub" style="text-align:center;margin-top:20px">Abra este arquivo localmente. Ele conversa com suas Edge Functions via HTTPS.</div>
+    <div class="card">
+      <strong>Resultados recentes</strong>
+      <div class="scroll"><table id="resTbl"><thead><tr>
+        <th>Cliente</th><th>Telefone</th><th>Status</th><th>Resposta</th><th>Sim?</th><th>Disparo</th>
+      </tr></thead><tbody></tbody></table></div>
+    </div>
+  </div>
 </div>
 
 <script>
-const $ = (s)=>document.querySelector(s);
-const LS = "valenet_crm_cfg";
-function loadCfg(){ try{return JSON.parse(localStorage.getItem(LS)||"{}")}catch{return {}} }
-function saveCfg(c){ localStorage.setItem(LS, JSON.stringify(c)); }
-const cfg = loadCfg();
-$("#baseUrl").value = cfg.baseUrl || "https://xijxklmnhoywlqqdxwvr.supabase.co/functions/v1";
-$("#panelToken").value = cfg.panelToken || "";
+// ==== Config pública (anon key é pública por natureza; nenhum segredo aqui) ====
+const SB   = "https://xijxklmnhoywlqqdxwvr.supabase.co";
+const ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpanhrbG1uaG95d2xxcWR4d3ZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3ODUyNTgsImV4cCI6MjA5OTM2MTI1OH0.Jl7zsabGG1423BQLEDWj1TXB1of10uqD2owjIkMrtWc";
+const FN   = SB + "/functions/v1";
+const LS   = "valenet_session";
 
-async function api(path, opts={}){
-  const c = loadCfg();
-  const r = await fetch(c.baseUrl.replace(/\/$/,"") + path, {
-    ...opts,
-    headers: { "authorization": "Bearer "+(c.panelToken||""), "content-type":"application/json", ...(opts.headers||{}) },
+const $ = (s)=>document.querySelector(s);
+function getSession(){ try{return JSON.parse(localStorage.getItem(LS)||"null")}catch{return null} }
+function setSession(s){ localStorage.setItem(LS, JSON.stringify(s)); }
+function clearSession(){ localStorage.removeItem(LS); }
+function esc(s){ return String(s??"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+function num(x){ return (x==null?0:x).toLocaleString("pt-BR"); }
+
+function saveFromAuth(d){
+  setSession({ access_token:d.access_token, refresh_token:d.refresh_token, email:(d.user&&d.user.email)||getSession()?.email||"" });
+}
+async function login(email, password){
+  const r = await fetch(`${SB}/auth/v1/token?grant_type=password`, {
+    method:"POST", headers:{ apikey:ANON, "content-type":"application/json" },
+    body: JSON.stringify({ email, password })
   });
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(d.error_description || d.msg || d.error || "e-mail ou senha inválidos");
+  saveFromAuth(d);
+}
+async function refreshToken(){
+  const s = getSession(); if(!s||!s.refresh_token) return false;
+  try{
+    const r = await fetch(`${SB}/auth/v1/token?grant_type=refresh_token`, {
+      method:"POST", headers:{ apikey:ANON, "content-type":"application/json" },
+      body: JSON.stringify({ refresh_token: s.refresh_token })
+    });
+    if(!r.ok) return false;
+    saveFromAuth(await r.json()); return true;
+  }catch{ return false; }
+}
+function logout(){ clearSession(); showLogin(); }
+
+async function api(path, opts={}, retried=false){
+  const s = getSession();
+  const r = await fetch(FN + path, { ...opts, headers:{ Authorization:"Bearer "+((s&&s.access_token)||""), "content-type":"application/json", ...(opts.headers||{}) }});
+  if(r.status===401 && !retried){
+    if(await refreshToken()) return api(path, opts, true);
+    logout(); throw new Error("sessão expirada — faça login novamente");
+  }
   const data = await r.json().catch(()=>({}));
   if(!r.ok) throw new Error(data.erro || ("HTTP "+r.status));
   return data;
 }
-function num(x){ return (x==null?0:x).toLocaleString("pt-BR"); }
-function esc(s){ return String(s??"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+function showLogin(){ $("#appView").classList.add("hidden"); $("#loginView").classList.remove("hidden"); }
+function showApp(){ $("#loginView").classList.add("hidden"); $("#appView").classList.remove("hidden"); $("#quemSou").textContent = getSession()?.email || ""; }
 
 async function refresh(){
   try{
     const d = await api("/painel-dados", {method:"POST", body:"{}"});
-    // modo
-    const modo = d.config?.modo || "simulation";
+    const modo = (d.config&&d.config.modo) || "simulation";
     const badge = $("#modeBadge");
     badge.className = "badge " + (modo==="live"?"live":"sim");
     badge.textContent = modo==="live" ? "MODO LIVE" : "SIMULAÇÃO";
-    $("#disparoHint").textContent = modo==="live"
-      ? "LIVE: mensagens reais serão enviadas via WhatsApp."
-      : "SIMULAÇÃO: nenhuma mensagem real é enviada (registra como simulado).";
-    // avisos
+    $("#disparoHint").textContent = modo==="live" ? "LIVE: mensagens reais serão enviadas via WhatsApp." : "SIMULAÇÃO: nenhuma mensagem real é enviada.";
     $("#avisos").innerHTML = (d.avisos||[]).map(a=>`<div class="aviso">⚠️ ${esc(a)}</div>`).join("");
-    // kpis
     const f = d.funil||{};
-    const kpi = [
-      ["Base", f.base_total],["Elegíveis", f.elegiveis],["Disparados", f.disparados],
-      ["Aceitos", f.aceitos],["Recusas", f.recusas],["Sem resposta", f.sem_resposta],["Handoff", f.handoff_humano],
-    ].map(([l,n])=>`<div class="kpi"><div class="n">${num(n)}</div><div class="l">${l}</div></div>`).join("");
-    $("#kpis").innerHTML = kpi;
-    // taxa
+    $("#kpis").innerHTML = [["Base",f.base_total],["Elegíveis",f.elegiveis],["Disparados",f.disparados],["Aceitos",f.aceitos],["Recusas",f.recusas],["Sem resposta",f.sem_resposta],["Handoff",f.handoff_humano]]
+      .map(([l,n])=>`<div class="kpi"><div class="n">${num(n)}</div><div class="l">${l}</div></div>`).join("");
     const taxa = Number(f.taxa_aceite_pct||0);
     $("#taxaTxt").innerHTML = `<b style="font-size:20px">${taxa}%</b> de aceite sobre disparados`;
-    $("#taxaBar").style.width = Math.min(100, (taxa/20)*100) + "%";
-    // elegiveis
+    $("#taxaBar").style.width = Math.min(100,(taxa/20)*100) + "%";
     $("#elegCount").textContent = "("+num((d.elegiveis||[]).length)+" mostrando, máx 100)";
     $("#elegTbl tbody").innerHTML = (d.elegiveis||[]).map(e=>`<tr>
       <td>${esc(e.nome)}<div class="muted">#${esc(e.codcliente)}</div></td>
       <td>${esc(e.cidade)}</td><td>${esc(e.banda)}</td><td>${esc(e.meses_vigencia)}</td>
       <td>R$ ${esc(e.total_mensal)}</td><td class="muted">${esc(e.telefone_mascarado)}</td></tr>`).join("");
-    // recentes
     $("#resTbl tbody").innerHTML = (d.recentes||[]).map(r=>`<tr>
       <td>#${esc(r.codcliente)}</td><td class="muted">${esc(r.telefone_mascarado)}</td>
       <td>${esc(r.status_disparo)}</td>
@@ -176,30 +209,44 @@ async function refresh(){
       <td>${r.simulado?'<span class="pill">simulado</span>':''}</td>
       <td class="muted">${r.data_disparo?new Date(r.data_disparo).toLocaleString("pt-BR"):"—"}</td></tr>`).join("");
   }catch(e){
-    $("#avisos").innerHTML = `<div class="aviso">Erro ao carregar: ${esc(e.message)}. Confira a URL base e o panel token.</div>`;
+    $("#avisos").innerHTML = `<div class="erro">Erro ao carregar: ${esc(e.message)}</div>`;
   }
 }
 
-$("#saveCfg").onclick = ()=>{ saveCfg({baseUrl:$("#baseUrl").value.trim(), panelToken:$("#panelToken").value.trim()}); refresh(); };
+// ==== eventos ====
+$("#btnLogin").onclick = async ()=>{
+  const b=$("#btnLogin"), err=$("#loginErro");
+  err.classList.add("hidden");
+  b.disabled=true; b.textContent="Entrando…";
+  try{
+    await login($("#email").value.trim(), $("#password").value);
+    showApp(); refresh();
+  }catch(e){ err.textContent = e.message; err.classList.remove("hidden"); }
+  finally{ b.disabled=false; b.textContent="Entrar"; }
+};
+$("#password").addEventListener("keydown", e=>{ if(e.key==="Enter") $("#btnLogin").click(); });
+$("#btnLogout").onclick = logout;
 
 $("#btnDisparar").onclick = async ()=>{
-  const btn = $("#btnDisparar"); const out = $("#disparoOut");
+  const btn=$("#btnDisparar"), out=$("#disparoOut");
   const limite = Number($("#limite").value)||25;
-  const modoLive = $("#modeBadge").textContent.includes("LIVE");
-  const msg = modoLive
-    ? `MODO LIVE: isto vai ENVIAR mensagens reais para até ${limite} clientes. Confirmar?`
-    : `Simular disparo para até ${limite} elegíveis?`;
+  const live = $("#modeBadge").textContent.includes("LIVE");
+  const msg = live ? `MODO LIVE: vai ENVIAR mensagens reais para até ${limite} clientes. Confirmar?` : `Simular disparo para até ${limite} elegíveis?`;
   if(!confirm(msg)) return;
-  btn.disabled = true; out.style.display="block"; out.textContent = "Disparando…";
+  btn.disabled=true; out.style.display="block"; out.textContent="Disparando…";
   try{
     const r = await api("/disparar-hsm", {method:"POST", body:JSON.stringify({limite})});
     out.textContent = `Modo: ${r.modo}\nReservados: ${r.reservados}\nEnviados: ${r.enviados}\nFalhas: ${r.falhas}`;
     refresh();
   }catch(e){ out.textContent = "Erro: "+e.message; }
-  finally{ btn.disabled = false; }
+  finally{ btn.disabled=false; }
 };
 
-if(cfg.baseUrl && cfg.panelToken) refresh();
+// ==== inicialização ====
+(function init(){
+  if(getSession()?.access_token){ showApp(); refresh(); }
+  else showLogin();
+})();
 </script>
 </body>
 </html>
