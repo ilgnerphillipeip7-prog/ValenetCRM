@@ -1,0 +1,19 @@
+# === SEGREDOS — NUNCA versionar ===
+supabase.local.env
+*.local.env
+.env
+.env.*
+*.pem
+*.key
+
+# Vercel / Node
+.vercel/
+node_modules/
+.turbo/
+
+# Sistema operacional / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log

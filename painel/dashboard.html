@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Valenet CRM — Painel de Fidelização</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --line:#262b36; --txt:#e7ebf0; --mut:#93a0b4;
+    --brand:#1f8f4e; --brand2:#2ec16b; --warn:#e8a33d; --danger:#e5484d; --accent:#3b82f6;
+  }
+  @media (prefers-color-scheme: light){
+    :root{--bg:#f5f7fa;--card:#fff;--line:#e3e8ef;--txt:#1a2230;--mut:#5b6675;}
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--txt)}
+  .wrap{max-width:1100px;margin:0 auto;padding:20px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  h1{font-size:20px;margin:0}
+  .sub{color:var(--mut);font-size:13px}
+  .badge{padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--line)}
+  .badge.sim{background:rgba(232,163,61,.15);color:var(--warn);border-color:var(--warn)}
+  .badge.live{background:rgba(46,193,107,.15);color:var(--brand2);border-color:var(--brand2)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .kpi .n{font-size:26px;font-weight:800}
+  .kpi .l{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  .meter{height:10px;border-radius:999px;background:var(--line);overflow:hidden;margin-top:8px}
+  .meter>i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--brand2))}
+  label{display:block;font-size:12px;color:var(--mut);margin:8px 0 4px}
+  input,button{font:inherit}
+  input{width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--txt)}
+  button{cursor:pointer;border:0;border-radius:9px;padding:10px 16px;font-weight:700;color:#fff;background:var(--brand)}
+  button.sec{background:transparent;color:var(--txt);border:1px solid var(--line)}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase}
+  .scroll{overflow-x:auto}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+  .pill{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--mut)}
+  .pill.aceite{color:var(--brand2);border-color:var(--brand2)}
+  .pill.recusa{color:var(--danger);border-color:var(--danger)}
+  .pill.handoff_humano{color:var(--warn);border-color:var(--warn)}
+  .aviso{background:rgba(232,163,61,.12);border:1px solid var(--warn);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:10px}
+  .muted{color:var(--mut)}
+  .out{white-space:pre-wrap;font-family:ui-monospace,monospace;font-size:12px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Valenet CRM — Fidelização</h1>
+      <div class="sub">Oferta +200MB por R$12,90 · painel + disparo via WhatsApp</div>
+    </div>
+    <div id="modeBadge" class="badge sim">carregando…</div>
+  </header>
+
+  <div class="card" id="cfgCard">
+    <strong>Conexão</strong>
+    <div class="sub" style="margin:4px 0 8px">Preenchido uma vez; fica salvo neste navegador (localStorage).</div>
+    <div class="row">
+      <div style="flex:2;min-width:260px">
+        <label>URL base das Edge Functions</label>
+        <input id="baseUrl" placeholder="https://SEU-REF.supabase.co/functions/v1" />
+      </div>
+      <div style="flex:2;min-width:220px">
+        <label>Panel token</label>
+        <input id="panelToken" type="password" placeholder="cole o PANEL_TOKEN" />
+      </div>
+      <div><button id="saveCfg" class="sec">Salvar e carregar</button></div>
+    </div>
+  </div>
+
+  <div id="avisos"></div>
+
+  <div class="grid" id="kpis"></div>
+
+  <div class="card">
+    <strong>Taxa de aceite</strong>
+    <div class="sub" id="taxaTxt" style="margin:4px 0">—</div>
+    <div class="meter"><i id="taxaBar" style="width:0%"></i></div>
+    <div class="sub" style="margin-top:6px">Meta do sprint: <b>20%</b></div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div>
+        <strong>Disparar HSM</strong>
+        <div class="sub" id="disparoHint">Reserva um lote de elegíveis ainda não contatados e envia (ou simula).</div>
+      </div>
+      <div class="row">
+        <div style="width:120px"><label>Limite do lote</label><input id="limite" type="number" value="25" min="1" max="200" /></div>
+        <div style="align-self:flex-end"><button id="btnDisparar">Disparar lote</button></div>
+      </div>
+    </div>
+    <div id="disparoOut" class="out" style="display:none"></div>
+  </div>
+
+  <div class="card">
+    <strong>Elegíveis (preview)</strong> <span class="muted" id="elegCount"></span>
+    <div class="scroll"><table id="elegTbl"><thead><tr>
+      <th>Cliente</th><th>Cidade</th><th>Banda</th><th>Meses vig.</th><th>Total</th><th>Telefone</th>
+    </tr></thead><tbody></tbody></table></div>
+  </div>
+
+  <div class="card">
+    <strong>Resultados recentes</strong>
+    <div class="scroll"><table id="resTbl"><thead><tr>
+      <th>Cliente</th><th>Telefone</th><th>Status</th><th>Resposta</th><th>Sim?</th><th>Disparo</th>
+    </tr></thead><tbody></tbody></table></div>
+  </div>
+
+  <div class="sub" style="text-align:center;margin-top:20px">Abra este arquivo localmente. Ele conversa com suas Edge Functions via HTTPS.</div>
+</div>
+
+<script>
+const $ = (s)=>document.querySelector(s);
+const LS = "valenet_crm_cfg";
+function loadCfg(){ try{return JSON.parse(localStorage.getItem(LS)||"{}")}catch{return {}} }
+function saveCfg(c){ localStorage.setItem(LS, JSON.stringify(c)); }
+const cfg = loadCfg();
+$("#baseUrl").value = cfg.baseUrl || "https://xijxklmnhoywlqqdxwvr.supabase.co/functions/v1";
+$("#panelToken").value = cfg.panelToken || "";
+
+async function api(path, opts={}){
+  const c = loadCfg();
+  const r = await fetch(c.baseUrl.replace(/\/$/,"") + path, {
+    ...opts,
+    headers: { "authorization": "Bearer "+(c.panelToken||""), "content-type":"application/json", ...(opts.headers||{}) },
+  });
+  const data = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(data.erro || ("HTTP "+r.status));
+  return data;
+}
+function num(x){ return (x==null?0:x).toLocaleString("pt-BR"); }
+function esc(s){ return String(s??"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+async function refresh(){
+  try{
+    const d = await api("/painel-dados", {method:"POST", body:"{}"});
+    // modo
+    const modo = d.config?.modo || "simulation";
+    const badge = $("#modeBadge");
+    badge.className = "badge " + (modo==="live"?"live":"sim");
+    badge.textContent = modo==="live" ? "MODO LIVE" : "SIMULAÇÃO";
+    $("#disparoHint").textContent = modo==="live"
+      ? "LIVE: mensagens reais serão enviadas via WhatsApp."
+      : "SIMULAÇÃO: nenhuma mensagem real é enviada (registra como simulado).";
+    // avisos
+    $("#avisos").innerHTML = (d.avisos||[]).map(a=>`<div class="aviso">⚠️ ${esc(a)}</div>`).join("");
+    // kpis
+    const f = d.funil||{};
+    const kpi = [
+      ["Base", f.base_total],["Elegíveis", f.elegiveis],["Disparados", f.disparados],
+      ["Aceitos", f.aceitos],["Recusas", f.recusas],["Sem resposta", f.sem_resposta],["Handoff", f.handoff_humano],
+    ].map(([l,n])=>`<div class="kpi"><div class="n">${num(n)}</div><div class="l">${l}</div></div>`).join("");
+    $("#kpis").innerHTML = kpi;
+    // taxa
+    const taxa = Number(f.taxa_aceite_pct||0);
+    $("#taxaTxt").innerHTML = `<b style="font-size:20px">${taxa}%</b> de aceite sobre disparados`;
+    $("#taxaBar").style.width = Math.min(100, (taxa/20)*100) + "%";
+    // elegiveis
+    $("#elegCount").textContent = "("+num((d.elegiveis||[]).length)+" mostrando, máx 100)";
+    $("#elegTbl tbody").innerHTML = (d.elegiveis||[]).map(e=>`<tr>
+      <td>${esc(e.nome)}<div class="muted">#${esc(e.codcliente)}</div></td>
+      <td>${esc(e.cidade)}</td><td>${esc(e.banda)}</td><td>${esc(e.meses_vigencia)}</td>
+      <td>R$ ${esc(e.total_mensal)}</td><td class="muted">${esc(e.telefone_mascarado)}</td></tr>`).join("");
+    // recentes
+    $("#resTbl tbody").innerHTML = (d.recentes||[]).map(r=>`<tr>
+      <td>#${esc(r.codcliente)}</td><td class="muted">${esc(r.telefone_mascarado)}</td>
+      <td>${esc(r.status_disparo)}</td>
+      <td>${r.resposta?`<span class="pill ${esc(r.resposta)}">${esc(r.resposta)}</span>`:'<span class="muted">—</span>'}</td>
+      <td>${r.simulado?'<span class="pill">simulado</span>':''}</td>
+      <td class="muted">${r.data_disparo?new Date(r.data_disparo).toLocaleString("pt-BR"):"—"}</td></tr>`).join("");
+  }catch(e){
+    $("#avisos").innerHTML = `<div class="aviso">Erro ao carregar: ${esc(e.message)}. Confira a URL base e o panel token.</div>`;
+  }
+}
+
+$("#saveCfg").onclick = ()=>{ saveCfg({baseUrl:$("#baseUrl").value.trim(), panelToken:$("#panelToken").value.trim()}); refresh(); };
+
+$("#btnDisparar").onclick = async ()=>{
+  const btn = $("#btnDisparar"); const out = $("#disparoOut");
+  const limite = Number($("#limite").value)||25;
+  const modoLive = $("#modeBadge").textContent.includes("LIVE");
+  const msg = modoLive
+    ? `MODO LIVE: isto vai ENVIAR mensagens reais para até ${limite} clientes. Confirmar?`
+    : `Simular disparo para até ${limite} elegíveis?`;
+  if(!confirm(msg)) return;
+  btn.disabled = true; out.style.display="block"; out.textContent = "Disparando…";
+  try{
+    const r = await api("/disparar-hsm", {method:"POST", body:JSON.stringify({limite})});
+    out.textContent = `Modo: ${r.modo}\nReservados: ${r.reservados}\nEnviados: ${r.enviados}\nFalhas: ${r.falhas}`;
+    refresh();
+  }catch(e){ out.textContent = "Erro: "+e.message; }
+  finally{ btn.disabled = false; }
+};
+
+if(cfg.baseUrl && cfg.panelToken) refresh();
+</script>
+</body>
+</html>
