@@ -107,10 +107,13 @@
       <div class="grid" id="kpis"></div>
       <div class="card"><strong>Taxa de aceite</strong><div class="sub" id="taxaTxt" style="margin:4px 0">—</div><div class="meter"><i id="taxaBar" style="width:0%"></i></div><div class="sub" style="margin-top:6px">Meta do sprint: <b>20%</b></div></div>
       <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <div><strong>Disparar HSM</strong><div class="sub" id="disparoHint">Reserva um lote de elegíveis e envia (ou simula).</div></div>
-          <div class="row"><div style="width:120px"><label>Limite do lote</label><input id="limite" type="number" value="25" min="1" max="200" /></div><div style="align-self:flex-end"><button id="btnDisparar">Disparar lote</button></div></div>
+        <div><strong>Disparar HSM</strong><div class="sub" id="disparoHint">Reserva um lote de elegíveis e envia (ou simula).</div></div>
+        <div class="row" style="margin-top:10px">
+          <div style="flex:2;min-width:220px"><label>Template (aprovado)</label><select id="dispTpl"><option value="">— carregando —</option></select></div>
+          <div style="width:120px"><label>Limite do lote</label><input id="limite" type="number" value="25" min="1" max="200" /></div>
+          <div style="align-self:flex-end"><button id="btnDisparar">Disparar lote</button></div>
         </div>
+        <div id="dispVars"></div>
         <div id="disparoOut" class="out" style="display:none"></div>
       </div>
       <div class="card"><strong>Elegíveis (preview)</strong> <span class="muted" id="elegCount"></span><div class="scroll"><table id="elegTbl"><thead><tr><th>Cliente</th><th>Cidade</th><th>Banda</th><th>Meses vig.</th><th>Total</th><th>Telefone</th></tr></thead><tbody></tbody></table></div></div>
@@ -268,8 +271,19 @@ async function refresh(){try{const d=await api("/painel-dados",{method:"POST",bo
   $("#elegCount").textContent="("+num((d.elegiveis||[]).length)+" mostrando)";
   $("#elegTbl tbody").innerHTML=(d.elegiveis||[]).map(e=>`<tr><td>${esc(e.nome)}<div class="muted">#${esc(e.codcliente)}</div></td><td>${esc(e.cidade)}</td><td>${esc(e.banda)}</td><td>${esc(e.meses_vigencia)}</td><td>R$ ${esc(e.total_mensal)}</td><td class="muted">${esc(e.telefone_mascarado)}</td></tr>`).join("");
   $("#resTbl tbody").innerHTML=(d.recentes||[]).map(r=>`<tr><td>#${esc(r.codcliente)}</td><td class="muted">${esc(r.telefone_mascarado)}</td><td>${esc(r.status_disparo)}</td><td>${r.resposta?`<span class="pill ${esc(r.resposta)}">${esc(r.resposta)}</span>`:'<span class="muted">—</span>'}</td><td>${r.simulado?'<span class="pill">simulado</span>':''}</td><td class="muted">${hora(r.data_disparo)}</td></tr>`).join("");
+  fillDispTpl();
 }catch(e){$("#avisos").innerHTML=`<div class="erro">Erro: ${esc(e.message)}</div>`}}
-$("#btnDisparar").onclick=async()=>{const btn=$("#btnDisparar"),out=$("#disparoOut");const limite=Number($("#limite").value)||25;const live=!!(window._cfg&&window._cfg.campanha_live);if(!confirm(live?`CAMPANHA LIVE: enviar templates reais para até ${limite} clientes. Confirmar?`:`Simular disparo para até ${limite} elegíveis?`))return;btn.disabled=true;out.style.display="block";out.textContent="Disparando…";try{const r=await api("/disparar-hsm",{method:"POST",body:JSON.stringify({limite})});out.textContent=`Modo: ${r.modo}\nReservados: ${r.reservados}\nEnviados: ${r.enviados}\nFalhas: ${r.falhas}`;refresh()}catch(e){out.textContent="Erro: "+e.message}finally{btn.disabled=false}};
+async function fillDispTpl(){try{await ensureTemplates()}catch{}const sel=$("#dispTpl");if(!sel)return;const cur=sel.value;const ap=aprovados();sel.innerHTML='<option value="">— nenhum (usa o template padrão do sistema) —</option>'+ap.map(t=>`<option value="${esc(t.name)}">${esc(t.name)} (${esc(t.language)})</option>`).join("");if(cur)sel.value=cur;dispTplVars()}
+function dispTplVars(){const box=$("#dispVars");const t=templatesCache.find(x=>x.name===$("#dispTpl").value);if(!t){box.innerHTML="";return}const n=varsCount(bodyOf(t));if(!n){box.innerHTML='<div class="sub" style="margin-top:8px">Este template não tem variáveis.</div>';return}let h='<div class="sub" style="margin:10px 0 4px">Variáveis (preenchidas por cliente):</div>';for(let i=1;i<=n;i++)h+=`<div class="row" style="margin-bottom:6px;align-items:center"><div style="width:70px">{{${i}}}</div><div style="width:190px"><select class="dvtipo" data-i="${i}"><option value="campo">Nome do cliente</option><option value="fixo">Texto fixo</option></select></div><div style="flex:1;min-width:140px"><input class="dvfixo" data-i="${i}" placeholder="texto fixo para {{${i}}}" style="display:none" /></div></div>`;box.innerHTML=h;box.querySelectorAll(".dvtipo").forEach(s=>s.onchange=()=>{const inp=box.querySelector('.dvfixo[data-i="'+s.dataset.i+'"]');inp.style.display=s.value==="fixo"?"block":"none"});$("#tplPreview")}
+document.addEventListener("change",e=>{if(e.target&&e.target.id==="dispTpl")dispTplVars()});
+$("#btnDisparar").onclick=async()=>{const btn=$("#btnDisparar"),out=$("#disparoOut");const limite=Number($("#limite").value)||25;
+  const tplName=$("#dispTpl")?.value||"";const t=templatesCache.find(x=>x.name===tplName);const language=t?t.language:"pt_BR";
+  let variaveis=[];if(t){const n=varsCount(bodyOf(t));for(let i=1;i<=n;i++){const tipo=$("#dispVars .dvtipo[data-i='"+i+"']")?.value||"campo";const valor=tipo==="fixo"?($("#dispVars .dvfixo[data-i='"+i+"']")?.value||"").trim():"nome";if(tipo==="fixo"&&!valor){alert("Preencha o texto fixo da variável {{"+i+"}}");return}variaveis.push({tipo,valor})}}
+  const live=!!(window._cfg&&window._cfg.campanha_live);
+  if(live&&!tplName){alert("Selecione um template aprovado para o disparo real.");return}
+  if(!confirm(live?`CAMPANHA LIVE: enviar o template "${tplName||'(padrão)'}" de verdade para até ${limite} clientes elegíveis. Confirmar?`:`Simular disparo para até ${limite} elegíveis?`))return;
+  btn.disabled=true;out.style.display="block";out.textContent="Disparando…";
+  try{const r=await api("/disparar-hsm",{method:"POST",body:JSON.stringify({limite,template_name:tplName,language,variaveis})});out.textContent=`Modo: ${r.modo}\nTemplate: ${tplName||"(padrão do sistema)"}\nReservados: ${r.reservados}\nEnviados: ${r.enviados}\nFalhas: ${r.falhas}`;refresh()}catch(e){out.textContent="Erro: "+e.message}finally{btn.disabled=false}};
 
 // conversas
 let convAtual=null,convJanela=false,pollTimer=null,convCache=[];

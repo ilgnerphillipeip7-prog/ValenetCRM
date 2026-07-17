@@ -43,8 +43,9 @@ async function pg(path: string, init: RequestInit = {}) {
     ...init,
     headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "content-type": "application/json", ...(init.headers ?? {}) },
   });
-  if (!r.ok) throw new Error(`pg ${path}: ${r.status} ${await r.text()}`);
-  return r.status === 204 ? null : await r.json();
+  const txt = await r.text();
+  if (!r.ok) throw new Error(`pg ${path}: ${r.status} ${txt}`);
+  return txt ? JSON.parse(txt) : null; // PostgREST devolve 201 com corpo vazio em inserts
 }
 
 Deno.serve(async (req) => {
@@ -57,8 +58,12 @@ Deno.serve(async (req) => {
   let limite = Number(body?.limite ?? 25);
   if (!Number.isFinite(limite) || limite < 1) limite = 25;
   limite = Math.min(limite, 200);
+  // Template escolhido no painel (fallback p/ o secret). variaveis: [{tipo:'campo'|'fixo', valor}]
+  const tplName = String(body?.template_name ?? "").trim() || WA_TEMPLATE;
+  const tplLang = String(body?.language ?? "").trim() || WA_LANG;
+  const variaveis: any[] = Array.isArray(body?.variaveis) ? body.variaveis : [];
 
-  const waReady = !!(WA_TOKEN && WA_PHONE_ID && WA_TEMPLATE);
+  const waReady = !!(WA_TOKEN && WA_PHONE_ID && tplName);
   const modo = (MODE === "live" && waReady && CAMPANHA_LIVE) ? "live" : "simulation";
 
   let lote: any[] = [];
@@ -69,6 +74,16 @@ Deno.serve(async (req) => {
     return json({ erro: "falha ao reservar lote" }, 500);
   }
 
+  // Nomes p/ variavel {{n}} = nome do cliente (busca em lote, 1 query)
+  const nomes: Record<string, string> = {};
+  if (modo === "live" && lote.length && variaveis.some((v) => v?.tipo === "campo" && v?.valor === "nome")) {
+    const ids = [...new Set(lote.map((r) => r.codcliente).filter(Boolean))];
+    if (ids.length) {
+      try { const rows = await pg(`stg_clientes?codcliente=in.(${ids.join(",")})&select=codcliente,nome`); for (const r of rows ?? []) nomes[String(r.codcliente)] = r.nome; } catch { /* ignora */ }
+    }
+  }
+  const primeiroNome = (n: string) => String(n || "cliente").trim().split(/\s+/)[0] || "cliente";
+
   let enviados = 0, falhas = 0;
   const detalhes: any[] = [];
   for (const row of lote) {
@@ -78,7 +93,10 @@ Deno.serve(async (req) => {
         await pg("rpc/rpc_marcar_disparo", { method: "POST", body: JSON.stringify({ p_id: row.id, p_status: "enviado", p_wa_message_id: fake, p_erro: null, p_simulado: true }) });
         enviados++; detalhes.push({ id: row.id, codcliente: row.codcliente, status: "enviado", simulado: true });
       } else {
-        const payload = { messaging_product: "whatsapp", to: row.telefone_e164, type: "template", template: { name: WA_TEMPLATE, language: { code: WA_LANG } } };
+        const params = variaveis.map((v) => ({ type: "text", text: (v?.tipo === "campo" && v?.valor === "nome") ? primeiroNome(nomes[String(row.codcliente)]) : String(v?.valor ?? "").slice(0, 120) }));
+        const template: any = { name: tplName, language: { code: tplLang } };
+        if (params.length) template.components = [{ type: "body", parameters: params }];
+        const payload = { messaging_product: "whatsapp", to: row.telefone_e164, type: "template", template };
         const r = await fetch(`${GRAPH}/${WA_PHONE_ID}/messages`, {
           method: "POST",
           headers: { Authorization: `Bearer ${WA_TOKEN}`, "content-type": "application/json" },
