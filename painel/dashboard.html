@@ -98,6 +98,7 @@
       <button class="tab active" data-tab="campanha" id="tabBtnCampanha">Campanha</button>
       <button class="tab" data-tab="conversas" id="tabBtnConversas">Conversas</button>
       <button class="tab" data-tab="templates" id="tabBtnTemplates">Templates</button>
+      <button class="tab" data-tab="velma" id="tabBtnVelma">Velma (IA)</button>
     </div>
 
     <!-- CAMPANHA -->
@@ -125,6 +126,7 @@
             <div><strong id="convNome">Selecione uma conversa</strong><div class="sub" id="convTel"></div></div>
             <div class="row" style="align-items:center">
               <span id="convJanela" class="badge fechada hidden"></span>
+              <button class="sec" id="btnTakeover" style="padding:6px 10px;display:none"></button>
               <button class="sec" id="btnTplToggle" style="padding:6px 10px;display:none">Enviar template</button>
             </div>
           </div>
@@ -173,6 +175,50 @@
       </div>
     </div>
 
+    <!-- VELMA (IA) -->
+    <div id="tabVelma" class="hidden">
+      <div id="velmaMsg"></div>
+      <div class="card">
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <div><strong>Velma — atendente de IA</strong><div class="sub" id="velmaEstado">—</div></div>
+          <div class="row" style="align-items:center;gap:10px">
+            <span id="velmaBadge" class="badge sim">…</span>
+            <button id="btnVelmaToggle">Ativar</button>
+          </div>
+        </div>
+        <div id="velmaAviso" class="aviso hidden" style="margin-top:12px"></div>
+      </div>
+
+      <div class="grid" id="velmaKpis"></div>
+
+      <div class="card">
+        <strong>Comportamento</strong>
+        <div class="row" style="margin-top:8px">
+          <div style="flex:1;min-width:160px"><label>Nome da persona</label><input id="vPersona" /></div>
+          <div style="flex:2;min-width:200px"><label>Tom</label><input id="vTom" /></div>
+        </div>
+        <div class="row">
+          <div style="flex:1;min-width:110px"><label>Debounce (s)</label><input id="vDebounce" type="number" min="1" max="120" /></div>
+          <div style="flex:1;min-width:110px"><label>Delay mín (ms)</label><input id="vDelayMin" type="number" min="0" max="15000" /></div>
+          <div style="flex:1;min-width:110px"><label>Delay máx (ms)</label><input id="vDelayMax" type="number" min="0" max="20000" /></div>
+          <div style="flex:1;min-width:160px;align-self:flex-end"><label style="color:var(--txt)"><input id="vBreak" type="checkbox" style="width:auto;margin-right:6px;vertical-align:middle" />Quebrar em bolhas</label></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <strong>Prompt do sistema (opcional)</strong>
+        <div class="sub" style="margin:4px 0">Deixe em branco para usar o prompt padrão da Velma. Se preencher, sobrepõe o padrão — o contexto do cliente e o KB são anexados automaticamente.</div>
+        <textarea id="vPrompt" style="min-height:120px" placeholder="(vazio = usar o prompt padrão da Velma)"></textarea>
+      </div>
+
+      <div class="card">
+        <strong>Base de conhecimento (KB)</strong>
+        <div class="sub" style="margin:4px 0">Oferta, FAQ e produtos que a Velma usa para responder. Nunca oriente valores fora da oferta +200MB por R$12,90.</div>
+        <textarea id="vKb" style="min-height:220px"></textarea>
+        <div style="margin-top:12px"><button id="btnVelmaSave">Salvar configurações</button></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -201,13 +247,15 @@ function showApp(){$("#loginView").classList.add("hidden");$("#appView").classLi
 // abas
 let abaAtual="campanha";
 function showTab(t){abaAtual=t;
-  ["campanha","conversas","templates"].forEach(x=>{$("#tab"+x[0].toUpperCase()+x.slice(1)).classList.toggle("hidden",x!==t);$("#tabBtn"+x[0].toUpperCase()+x.slice(1)).classList.toggle("active",x===t)});
+  ["campanha","conversas","templates","velma"].forEach(x=>{$("#tab"+x[0].toUpperCase()+x.slice(1)).classList.toggle("hidden",x!==t);$("#tabBtn"+x[0].toUpperCase()+x.slice(1)).classList.toggle("active",x===t)});
   if(t==="conversas"){loadConversas();startPoll()}else{stopPoll()}
   if(t==="templates")loadTemplates();
+  if(t==="velma")loadVelma();
 }
 $("#tabBtnCampanha").onclick=()=>showTab("campanha");
 $("#tabBtnConversas").onclick=()=>showTab("conversas");
 $("#tabBtnTemplates").onclick=()=>showTab("templates");
+$("#tabBtnVelma").onclick=()=>showTab("velma");
 
 // campanha
 async function refresh(){try{const d=await api("/painel-dados",{method:"POST",body:"{}"});const cfg=d.config||{};window._cfg=cfg;const modo=cfg.modo||"simulation";
@@ -233,7 +281,7 @@ async function loadConversas(){try{const d=await api("/painel-conversas",{method
 async function openConversa(tel,janela){convAtual=tel;convJanela=janela;const c=convCache.find(x=>x.telefone_canon===tel)||{};
   $("#convNome").textContent=c.nome||("+"+tel);$("#convTel").textContent="+"+tel+(c.codcliente?(" · cliente #"+c.codcliente):"");
   const jb=$("#convJanela");jb.classList.remove("hidden");jb.className="badge "+(janela?"aberta":"fechada");jb.textContent=janela?"janela 24h aberta":"janela fechada";
-  $("#btnTplToggle").style.display="inline-block";$("#tplSend").classList.add("hidden");
+  $("#btnTplToggle").style.display="inline-block";$("#tplSend").classList.add("hidden");setTakeover(tel);
   $("#convList").querySelectorAll(".convitem").forEach(el=>el.classList.toggle("sel",el.dataset.tel===tel));
   if(janela){$("#replyBox").style.display="flex";$("#janAviso").classList.add("hidden")}
   else{$("#replyBox").style.display="none";$("#janAviso").classList.remove("hidden");$("#janAviso").innerHTML="🚫 <b>Envio bloqueado:</b> a janela de 24h fechou. O WhatsApp não permite texto livre fora dela — para reabrir a conversa, use o botão <b>Enviar template</b> acima (mensagem aprovada pela Meta)."}
@@ -243,6 +291,8 @@ async function loadThread(){if(!convAtual)return;try{const d=await api("/painel-
   body.scrollTop=body.scrollHeight}catch(e){$("#convBody").innerHTML=`<div class="center">Erro: ${esc(e.message)}</div>`}}
 $("#btnEnviar").onclick=async()=>{const ta=$("#replyText"),btn=$("#btnEnviar");const texto=ta.value.trim();if(!texto||!convAtual)return;btn.disabled=true;try{await api("/enviar-mensagem",{method:"POST",body:JSON.stringify({telefone:convAtual,texto})});ta.value="";await loadThread();loadConversas()}catch(e){alert("Não enviou: "+e.message)}finally{btn.disabled=false}};
 $("#replyText")?.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("#btnEnviar").click()}});
+async function setTakeover(tel){const bt=$("#btnTakeover");try{const cs=await api("/velma-config",{method:"POST",body:JSON.stringify({action:"conv_status",telefone:tel})});if(tel!==convAtual)return;bt.style.display="inline-block";bt.dataset.tel=tel;if(cs.status==="humano"){bt.textContent="Devolver p/ Velma";bt.dataset.modo="velma"}else{bt.textContent="Assumir (humano)";bt.dataset.modo="humano"}}catch(_e){bt.style.display="none"}}
+$("#btnTakeover").onclick=async()=>{const bt=$("#btnTakeover");const tel=bt.dataset.tel||convAtual;const modo=bt.dataset.modo||"humano";if(!tel)return;bt.disabled=true;try{await api("/velma-config",{method:"POST",body:JSON.stringify({action:"takeover",telefone:tel,modo})});await setTakeover(tel)}catch(e){alert("Não foi possível: "+e.message)}finally{bt.disabled=false}};
 function startPoll(){stopPoll();pollTimer=setInterval(()=>{if(abaAtual==="conversas"){loadConversas();if(convAtual)loadThread()}},7000)}
 function stopPoll(){if(pollTimer){clearInterval(pollTimer);pollTimer=null}}
 
@@ -278,6 +328,20 @@ $("#btnCriarTpl").onclick=async()=>{const btn=$("#btnCriarTpl"),msg=$("#ntMsg");
   btn.disabled=true;msg.innerHTML='<div class="sub">Enviando para a Meta…</div>';
   try{const r=await api("/templates",{method:"POST",body:JSON.stringify({action:"create",template:tpl})});msg.innerHTML=`<div class="ok">✅ Template "<b>${esc(r.template.name)}</b>" criado — status: <b>${esc(r.template.status)}</b>. Aguarde a aprovação da Meta.</div>`;templatesCarregado=false;loadTemplates()}
   catch(e){msg.innerHTML=`<div class="erro">${esc(e.message)}</div>`}finally{btn.disabled=false}};
+
+// velma (IA)
+let velmaCfg=null;
+async function loadVelma(){const msg=$("#velmaMsg");msg.innerHTML="";try{const d=await api("/velma-config",{method:"POST",body:JSON.stringify({action:"get"})});velmaCfg=d;const s=d.settings||{};const on=!!s.is_active;
+  const badge=$("#velmaBadge");badge.className="badge "+(on?"live":"sim");badge.textContent=on?"ATIVA":"DESATIVADA";
+  $("#velmaEstado").textContent=on?"Respondendo automaticamente clientes da base (modo velma).":"Desligada — sem resposta automática.";
+  const tog=$("#btnVelmaToggle");tog.textContent=on?"Desativar":"Ativar";tog.className=on?"sec":"";
+  const av=$("#velmaAviso");if(!d.anthropic_ready){av.classList.remove("hidden");av.textContent="⚠️ ANTHROPIC_API_KEY não configurada no Supabase — não é possível ativar a Velma até cadastrar a chave.";tog.disabled=!on}else{av.classList.add("hidden");tog.disabled=false}
+  $("#vPersona").value=s.persona_nome||"";$("#vTom").value=s.tom||"";$("#vDebounce").value=s.debounce_seconds??10;$("#vDelayMin").value=s.response_delay_min??1000;$("#vDelayMax").value=s.response_delay_max??3000;$("#vBreak").checked=s.message_breaking_enabled!==false;$("#vPrompt").value=s.system_prompt_override||"";$("#vKb").value=s.kb||"";
+  const st=d.stats||{};$("#velmaKpis").innerHTML=[["Aguard. agrupar",st.agrup_pending],["Fila IA",st.ia_pending],["Fila envio",st.envio_pending],["Em humano",st.em_humano],["Aceites",st.aceites],["IA falhou",st.ia_failed],["Envio falhou",st.envio_failed]].map(([l,n])=>`<div class="kpi"><div class="n">${num(n||0)}</div><div class="l">${esc(l)}</div></div>`).join("");
+}catch(e){msg.innerHTML=`<div class="erro">Erro: ${esc(e.message)}</div>`}}
+async function saveVelma(patch){const msg=$("#velmaMsg");try{await api("/velma-config",{method:"POST",body:JSON.stringify({action:"save",patch})});msg.innerHTML='<div class="ok">✅ Salvo.</div>';await loadVelma()}catch(e){msg.innerHTML=`<div class="erro">${esc(e.message)}</div>`}}
+$("#btnVelmaToggle").onclick=()=>{const on=!!(velmaCfg&&velmaCfg.settings&&velmaCfg.settings.is_active);if(!on&&!confirm("Ativar a Velma? Ela passará a responder automaticamente os clientes da base em conversas no modo velma."))return;saveVelma({is_active:!on})};
+$("#btnVelmaSave").onclick=()=>saveVelma({persona_nome:$("#vPersona").value,tom:$("#vTom").value,debounce_seconds:$("#vDebounce").value,response_delay_min:$("#vDelayMin").value,response_delay_max:$("#vDelayMax").value,message_breaking_enabled:$("#vBreak").checked,system_prompt_override:$("#vPrompt").value,kb:$("#vKb").value});
 
 // login/init
 $("#btnLogin").onclick=async()=>{const b=$("#btnLogin"),err=$("#loginErro");err.classList.add("hidden");b.disabled=true;b.textContent="Entrando…";try{await login($("#email").value.trim(),$("#password").value);showApp();refresh()}catch(e){err.textContent=e.message;err.classList.remove("hidden")}finally{b.disabled=false;b.textContent="Entrar"}};
