@@ -10,6 +10,8 @@ const MODE = (Deno.env.get("DISPATCH_MODE") ?? "simulation").toLowerCase();
 const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
 const CLASSIFIER_MODEL = Deno.env.get("CLASSIFIER_MODEL") ?? "claude-haiku-4-5";
 const ST_MAP: Record<string, string> = { sent: "enviado", delivered: "entregue", read: "lido", failed: "falhou" };
+// Fan-out: outros servidores que usam o MESMO número recebem uma cópia dos eventos.
+const FANOUT = (Deno.env.get("WEBHOOK_FANOUT_URLS") ?? "").split(",").map((s) => s.trim()).filter(Boolean);
 
 function ctEq(a: string, b: string): boolean {
   const ea = new TextEncoder().encode(a), eb = new TextEncoder().encode(b);
@@ -80,6 +82,19 @@ Deno.serve(async (req) => {
     if (!(await verifySig(raw, sig))) return new Response("assinatura invalida", { status: 403 });
   } else if (MODE === "live") {
     return new Response("webhook exige WHATSAPP_APP_SECRET em producao", { status: 403 });
+  }
+
+  // Fan-out: reenvia o corpo cru + a assinatura para outros servidores (mesmo numero).
+  // Cada destino valida a assinatura com o mesmo App Secret. Roda em background (nao atrasa a Meta).
+  if (FANOUT.length) {
+    const fwd = async () => {
+      await Promise.allSettled(FANOUT.map((u) =>
+        fetch(u, { method: "POST", headers: { "content-type": "application/json", ...(sig ? { "x-hub-signature-256": sig } : {}) }, body: raw, signal: AbortSignal.timeout(8000) })
+          .catch((e) => console.error("fanout", u, String(e)))
+      ));
+    };
+    const wu = (globalThis as any).EdgeRuntime?.waitUntil;
+    if (typeof wu === "function") wu(fwd()); else await fwd();
   }
 
   let payload: any = {};

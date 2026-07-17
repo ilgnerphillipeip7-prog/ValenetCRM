@@ -44,13 +44,16 @@ Deno.serve(async (req) => {
     if (action === "list") {
       const r = await fetch(`${GRAPH}/${WABA}/message_templates?fields=name,status,category,language,components&limit=100`, { headers: authH });
       const d = await r.json();
-      if (!r.ok) return json({ erro: "falha ao listar", detalhe: d?.error?.message ?? d }, 502);
+      if (!r.ok) {
+        if (d?.error?.code === 190) return json({ erro: "Token do WhatsApp expirou/invalido. Gere um token permanente (expiracao 'Nunca')." }, 400);
+        return json({ erro: "falha ao listar templates", detalhe: d?.error?.message ?? d }, 502);
+      }
       return json({ templates: d.data ?? [] });
     }
 
     if (action === "create") {
       const t = body?.template ?? {};
-      const name = String(t.name ?? "").trim().toLowerCase().replace(/[^a-z0-9_]/g, "_");
+      const name = String(t.name ?? "").trim().toLowerCase().replace(/[^a-z0-9_]/g, "_").replace(/_+/g, "_").replace(/^_+|_+$/g, "");
       const category = String(t.category ?? "MARKETING").toUpperCase();
       const language = String(t.language ?? "pt_BR");
       const corpo = String(t.body ?? "").trim();
@@ -78,7 +81,11 @@ Deno.serve(async (req) => {
         method: "POST", headers: { ...authH, "content-type": "application/json" }, body: JSON.stringify(payload),
       });
       const d = await r.json();
-      if (!r.ok) return json({ erro: "Meta recusou o template", detalhe: d?.error?.error_user_msg ?? d?.error?.message ?? d }, 400);
+      if (!r.ok) {
+        const err = d?.error ?? {};
+        if (err.code === 190) return json({ erro: "Token do WhatsApp expirou/invalido. Gere um token PERMANENTE (Usuario do Sistema, expiracao 'Nunca') com whatsapp_business_messaging + whatsapp_business_management." }, 400);
+        return json({ erro: "Meta recusou o template", detalhe: err.error_user_msg ?? err.error_user_title ?? err.message ?? d }, 400);
+      }
       return json({ ok: true, template: { name, category, language, id: d.id, status: d.status ?? "PENDING" }, enviado_para_aprovacao: true });
     }
 
