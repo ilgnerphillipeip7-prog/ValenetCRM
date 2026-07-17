@@ -17,8 +17,9 @@ async function pg(path: string, init: RequestInit = {}) {
     ...init,
     headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "content-type": "application/json", ...(init.headers ?? {}) },
   });
-  if (!r.ok) throw new Error(`pg ${path}: ${r.status} ${await r.text()}`);
-  return r.status === 204 ? null : await r.json();
+  const txt = await r.text();
+  if (!r.ok) throw new Error(`pg ${path}: ${r.status} ${txt}`);
+  return txt ? JSON.parse(txt) : null; // PostgREST devolve 201 com corpo vazio em inserts
 }
 
 Deno.serve(async (req) => {

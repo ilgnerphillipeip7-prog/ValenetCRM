@@ -34,8 +34,9 @@ async function pg(path: string, init: RequestInit = {}) {
     ...init,
     headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "content-type": "application/json", ...(init.headers ?? {}) },
   });
-  if (!r.ok) throw new Error(`pg ${path}: ${r.status} ${await r.text()}`);
-  return r.status === 204 ? null : await r.json();
+  const txt = await r.text();
+  if (!r.ok) throw new Error(`pg ${path}: ${r.status} ${txt}`);
+  return txt ? JSON.parse(txt) : null; // PostgREST devolve 201 com corpo vazio em inserts
 }
 const canon = (p: string) => (p || "").replace(/\D/g, "").replace(/^(55\d{2})9(\d{8})$/, "$1$2");
 const clampInt = (v: unknown, lo: number, hi: number, def: number) => { const n = Math.round(Number(v)); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : def; };
