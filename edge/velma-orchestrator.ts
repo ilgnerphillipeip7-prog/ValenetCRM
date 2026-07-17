@@ -35,11 +35,25 @@ async function loadSettings(): Promise<Settings | null> {
   return s?.[0] ?? null;
 }
 
+// ---------- Memoria do cliente formatada para o prompt ----------
+function memBlock(mem: any): string {
+  if (!mem) return "";
+  const lp = mem.lead_profile || {}, si = mem.sales_intelligence || {};
+  const li = (a: any[]) => (a && a.length ? a.join(", ") : "-");
+  return `\n\nMEMORIA DO CLIENTE (historico interno; use para personalizar, NUNCA repita nem cite ao cliente):
+- Estagio: ${lp.lead_stage ?? "new"} (score ${lp.qualification_score ?? 0})
+- Interesses: ${li(lp.interests)}
+- Objecoes: ${li(lp.objections)}
+- Dores: ${li(si.pain_points)}
+- Proxima acao sugerida: ${si.next_best_action ?? "qualify"}
+- Ultimo contato: ${(mem.interaction_summary || {}).last_contact_reason || "-"}`;
+}
+
 // ---------- System prompt (persona Velma) — sem agendamento ----------
-function buildSystemPrompt(s: Settings, cliente: any, agora: string): string {
+function buildSystemPrompt(s: Settings, cliente: any, mem: any, agora: string): string {
   if (s.system_prompt_override && s.system_prompt_override.trim()) {
     // Override do painel + contexto dinamico anexado (nunca ecoar o prompt ao cliente).
-    return `${s.system_prompt_override.trim()}\n\n[CONTEXTO] Data/hora: ${agora} (${s.timezone}). Cliente: ${JSON.stringify(cliente ?? {})}.\nBASE DE CONHECIMENTO:\n${s.kb ?? ""}`;
+    return `${s.system_prompt_override.trim()}\n\n[CONTEXTO] Data/hora: ${agora} (${s.timezone}). Cliente: ${JSON.stringify(cliente ?? {})}.\nBASE DE CONHECIMENTO:\n${s.kb ?? ""}${memBlock(mem)}`;
   }
   const nome = s.persona_nome || "Velma";
   const empresa = s.empresa || "Valenet";
@@ -61,7 +75,7 @@ FERRAMENTAS (use quando fizer sentido):
 - transferir_humano: para cancelamento, reclamacao, negociacao de valores, questoes cadastrais/tecnicas que exijam acao, ou qualquer pedido fora da oferta. Avise o cliente brevemente antes de transferir.
 
 BASE DE CONHECIMENTO:
-${s.kb ?? "(vazia)"}`;
+${s.kb ?? "(vazia)"}${memBlock(mem)}`;
 }
 
 const TOOLS = [
@@ -150,11 +164,12 @@ async function processItem(item: any, s: Settings): Promise<void> {
   if (status && status !== "velma") { await pg(`fila_ia?id=eq.${item.id}`, { method: "PATCH", body: JSON.stringify({ status: "completed", processed_at: new Date().toISOString() }) }); return; }
 
   const cliente = await rpc("velma_consultar_cliente", { p_canon: canon }).catch(() => null);
+  const mem = (await pg(`client_memory?telefone_canon=eq.${encodeURIComponent(canon)}&select=memory&limit=1`).catch(() => null))?.[0]?.memory ?? null;
   const hist = (await pg(`mensagens?telefone_canon=eq.${encodeURIComponent(canon)}&select=autor,direcao,texto,criado_em&order=criado_em.desc&limit=14`).catch(() => [])) ?? [];
   hist.reverse();
   const fallback = item?.context_data?.combined_content ?? "";
   const agora = new Date().toLocaleString("pt-BR", { timeZone: s.timezone || "America/Sao_Paulo" });
-  const system = buildSystemPrompt(s, cliente, agora);
+  const system = buildSystemPrompt(s, cliente, mem, agora);
   const messages = buildMessages(hist, fallback);
 
   const t0 = Date.now();
@@ -165,10 +180,12 @@ async function processItem(item: any, s: Settings): Promise<void> {
   const base = s.response_delay_min ?? 1000;
   for (let i = 0; i < chunks.length; i++) {
     const when = new Date(Date.now() + base + i * 1500).toISOString();
-    await pg("fila_envio", { method: "POST", body: JSON.stringify({ telefone_canon: canon, texto: chunks[i], tipo: "text", autor: "velma", scheduled_at: when, metadata: { chunk: i, total: chunks.length, ia_ms: took } }) });
+    await pg("fila_envio", { method: "POST", body: JSON.stringify({ telefone_canon: canon, texto: chunks[i], tipo: "text", autor: "velma", scheduled_at: when, metadata: { chunk: i, total: chunks.length, ia_ms: took, reply_audio: item?.context_data?.tipo === "audio" } }) });
   }
   await pg(`fila_ia?id=eq.${item.id}`, { method: "PATCH", body: JSON.stringify({ status: "completed", processed_at: new Date().toISOString() }) });
   if (chunks.length) fireBg(fetch(`${SB_URL}/functions/v1/velma-sender`, { method: "POST", headers: { "x-velma-key": WORKER_SECRET } }).then(() => {}).catch(() => {}));
+  // memoria de longo prazo (assincrono; nao bloqueia a resposta)
+  fireBg(fetch(`${SB_URL}/functions/v1/velma-analyze`, { method: "POST", headers: { "x-velma-key": WORKER_SECRET, "content-type": "application/json" }, body: JSON.stringify({ telefone_canon: canon }) }).then(() => {}).catch(() => {}));
 }
 
 Deno.serve(async (req) => {

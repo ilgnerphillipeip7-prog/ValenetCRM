@@ -9,6 +9,11 @@ const MODE = (Deno.env.get("DISPATCH_MODE") ?? "simulation").toLowerCase();
 const WA_TOKEN = Deno.env.get("WHATSAPP_TOKEN") ?? "";
 const WA_PHONE_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID") ?? "";
 const GRAPH = "https://graph.facebook.com/v21.0";
+// Áudio (TTS) — preparado; ativa com velma_settings.tts_enabled + ELEVENLABS_API_KEY.
+const ELEVENLABS_KEY = Deno.env.get("ELEVENLABS_API_KEY") ?? "";
+const TTS_VOICE = Deno.env.get("ELEVENLABS_VOICE_ID") ?? "33B4UnXyTNbgLmdEDh5P"; // Keren PT-BR
+const TTS_MODEL = Deno.env.get("ELEVENLABS_MODEL") ?? "eleven_turbo_v2_5";
+const AUDIO_BUCKET = "velma-audio";
 const MAX_RETRY = 3;
 
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { "content-type": "application/json" } });
@@ -53,7 +58,42 @@ async function enviarWhats(to: string, texto: string): Promise<{ wa_id: string |
   } catch (e) { return { wa_id: null, status: "falhou", erro: String(e).slice(0, 400), simulado: false }; }
 }
 
-async function processItem(item: any): Promise<void> {
+// TTS: sintetiza via ElevenLabs, sobe no Storage publico e devolve a URL. null se falhar.
+async function sintetizarTTS(texto: string, canon: string): Promise<string | null> {
+  try {
+    const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${TTS_VOICE}?output_format=mp3_44100_128`, {
+      method: "POST",
+      headers: { "xi-api-key": ELEVENLABS_KEY, "content-type": "application/json", accept: "audio/mpeg" },
+      body: JSON.stringify({ text: texto, model_id: TTS_MODEL, voice_settings: { stability: 0.75, similarity_boost: 0.8, style: 0.3, use_speaker_boost: true } }),
+    });
+    if (!r.ok) return null;
+    const buf = new Uint8Array(await r.arrayBuffer());
+    const path = `${canon}/${Date.now()}.mp3`;
+    const up = await fetch(`${SB_URL}/storage/v1/object/${AUDIO_BUCKET}/${path}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${SB_KEY}`, apikey: SB_KEY, "content-type": "audio/mpeg", "cache-control": "3600" },
+      body: buf,
+    });
+    if (!up.ok) return null;
+    return `${SB_URL}/storage/v1/object/public/${AUDIO_BUCKET}/${path}`;
+  } catch { return null; }
+}
+async function enviarWhatsAudio(to: string, link: string): Promise<{ wa_id: string | null; status: string; erro: string | null; simulado: boolean }> {
+  const waReady = !!(WA_TOKEN && WA_PHONE_ID);
+  if (!(MODE === "live" && waReady)) return { wa_id: `SIMOUT-${Date.now()}`, status: "enviado", erro: null, simulado: true };
+  try {
+    const r = await fetch(`${GRAPH}/${WA_PHONE_ID}/messages`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${WA_TOKEN}`, "content-type": "application/json" },
+      body: JSON.stringify({ messaging_product: "whatsapp", to, type: "audio", audio: { link } }),
+    });
+    const data = await r.json();
+    if (r.ok && data?.messages?.[0]?.id) return { wa_id: data.messages[0].id, status: "enviado", erro: null, simulado: false };
+    return { wa_id: null, status: "falhou", erro: JSON.stringify(data?.error ?? data).slice(0, 400), simulado: false };
+  } catch (e) { return { wa_id: null, status: "falhou", erro: String(e).slice(0, 400), simulado: false }; }
+}
+
+async function processItem(item: any, ttsOn: boolean): Promise<void> {
   const canon = item.telefone_canon;
   const texto = (item.texto ?? "").trim();
   if (!texto) { await pg(`fila_envio?id=eq.${item.id}`, { method: "PATCH", body: JSON.stringify({ status: "completed", sent_at: new Date().toISOString() }) }); return; }
@@ -64,12 +104,15 @@ async function processItem(item: any): Promise<void> {
     return;
   }
 
-  const res = await enviarWhats(to, texto);
+  // Espelhamento: se a entrada foi áudio e o TTS está ligado, responde em áudio (fallback texto).
+  const audioLink = (ttsOn && item?.metadata?.reply_audio === true) ? await sintetizarTTS(texto, canon) : null;
+  const res = audioLink ? await enviarWhatsAudio(to, audioLink) : await enviarWhats(to, texto);
+  const tipoOut = audioLink ? "audio" : "text";
   // Registra a saida no inbox (historico da Velma)
-  await pg("mensagens", { method: "POST", body: JSON.stringify({ telefone_e164: to, direcao: "out", autor: "velma", tipo: "text", texto, wa_message_id: res.wa_id, status: res.status, simulado: res.simulado }) }).catch((e) => console.error("sender inbox:", e));
+  await pg("mensagens", { method: "POST", body: JSON.stringify({ telefone_e164: to, direcao: "out", autor: "velma", tipo: tipoOut, texto, wa_message_id: res.wa_id, status: res.status, simulado: res.simulado }) }).catch((e) => console.error("sender inbox:", e));
 
   if (res.status === "enviado") {
-    await pg(`fila_envio?id=eq.${item.id}`, { method: "PATCH", body: JSON.stringify({ status: "completed", sent_at: new Date().toISOString(), wa_message_id: res.wa_id }) });
+    await pg(`fila_envio?id=eq.${item.id}`, { method: "PATCH", body: JSON.stringify({ status: "completed", sent_at: new Date().toISOString(), wa_message_id: res.wa_id, media_url: audioLink }) });
   } else {
     const n = (item.retry_count ?? 0) + 1;
     const patch = n < MAX_RETRY
@@ -82,13 +125,15 @@ async function processItem(item: any): Promise<void> {
 Deno.serve(async (req) => {
   if (req.headers.get("x-velma-key") !== WORKER_SECRET) return json({ erro: "nao autorizado" }, 401);
 
+  const ttsOn = !!(ELEVENLABS_KEY && WA_TOKEN) && await pg("velma_settings?select=tts_enabled&limit=1").then((s) => !!s?.[0]?.tts_enabled).catch(() => false);
+
   let items: any[] = [];
   try { items = (await pg("rpc/claim_fila_envio", { method: "POST", body: JSON.stringify({ p_limit: 10 }) })) ?? []; }
   catch (e) { console.error("claim fila_envio:", e); return json({ erro: "claim falhou" }, 500); }
 
   let ok = 0;
   for (const item of items) { // sequencial: preserva a ordem dos chunks e evita rajada
-    try { await processItem(item); ok++; } catch (e) { console.error("sender item", item.id, e); }
+    try { await processItem(item, ttsOn); ok++; } catch (e) { console.error("sender item", item.id, e); }
   }
 
   // Auto-reschedule: se ainda ha itens pendentes (inclusive chunks agendados no futuro), reinvoca perto do vencimento.
