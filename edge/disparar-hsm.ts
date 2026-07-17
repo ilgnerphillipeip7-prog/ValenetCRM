@@ -62,6 +62,7 @@ Deno.serve(async (req) => {
   const tplName = String(body?.template_name ?? "").trim() || WA_TEMPLATE;
   const tplLang = String(body?.language ?? "").trim() || WA_LANG;
   const variaveis: any[] = Array.isArray(body?.variaveis) ? body.variaveis : [];
+  const intervalo = Math.min(Math.max(Number(body?.intervalo_ms ?? 300), 0), 5000); // pausa entre envios (rate limit)
 
   const waReady = !!(WA_TOKEN && WA_PHONE_ID && tplName);
   const modo = (MODE === "live" && waReady && CAMPANHA_LIVE) ? "live" : "simulation";
@@ -111,7 +112,7 @@ Deno.serve(async (req) => {
           await pg("rpc/rpc_marcar_disparo", { method: "POST", body: JSON.stringify({ p_id: row.id, p_status: "falhou", p_wa_message_id: null, p_erro: err, p_simulado: false }) });
           falhas++; detalhes.push({ id: row.id, codcliente: row.codcliente, status: "falhou", erro: err });
         }
-        await new Promise((res) => setTimeout(res, 300));
+        await new Promise((res) => setTimeout(res, intervalo));
       }
     } catch (e) {
       falhas++;

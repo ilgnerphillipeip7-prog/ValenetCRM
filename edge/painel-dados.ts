@@ -10,7 +10,7 @@ const WA_PHONE = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID") ?? "";
 const WA_TEMPLATE = Deno.env.get("WHATSAPP_TEMPLATE_NAME") ?? "";
 const CAMPANHA_LIVE = (Deno.env.get("CAMPANHA_LIVE") ?? "").toLowerCase() === "true";
 const chatLive = MODE === "live" && !!WA_TOKEN && !!WA_PHONE;
-const campanhaLive = chatLive && !!WA_TEMPLATE && CAMPANHA_LIVE;
+const campanhaLive = chatLive && CAMPANHA_LIVE; // o template e escolhido no painel a cada disparo
 
 const cors: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -48,7 +48,8 @@ Deno.serve(async (req) => {
     const avisos: string[] = [];
     if (!chatLive) avisos.push("Modo SIMULACAO: nenhuma mensagem real e enviada.");
     else avisos.push("Chat em LIVE: respostas no inbox sao enviadas de verdade pelo WhatsApp.");
-    if (chatLive && !campanhaLive) avisos.push("Disparo de campanha em massa ainda TRAVADO (simulacao): requer template aprovado + CAMPANHA_LIVE=true.");
+    if (chatLive && !campanhaLive) avisos.push("Disparo em massa em SIMULACAO: defina CAMPANHA_LIVE=true para enviar de verdade.");
+    else if (campanhaLive) avisos.push("Campanha em LIVE: o disparo em massa envia templates reais aos elegiveis.");
     return json({
       funil, elegiveis, recentes,
       config: { modo: chatLive ? "live" : "simulation", chat_live: chatLive, campanha_live: campanhaLive, whatsapp_configurado: !!(WA_TOKEN && WA_PHONE), template: WA_TEMPLATE || null, meta_taxa_aceite: 20 },

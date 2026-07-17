@@ -110,7 +110,8 @@
         <div><strong>Disparar HSM</strong><div class="sub" id="disparoHint">Reserva um lote de elegíveis e envia (ou simula).</div></div>
         <div class="row" style="margin-top:10px">
           <div style="flex:2;min-width:220px"><label>Template (aprovado)</label><select id="dispTpl"><option value="">— carregando —</option></select></div>
-          <div style="width:120px"><label>Limite do lote</label><input id="limite" type="number" value="25" min="1" max="200" /></div>
+          <div style="width:110px"><label>Limite do lote</label><input id="limite" type="number" value="25" min="1" max="200" /></div>
+          <div style="width:120px"><label>Intervalo (ms)</label><input id="intervalo" type="number" value="300" min="0" max="5000" /></div>
           <div style="align-self:flex-end"><button id="btnDisparar">Disparar lote</button></div>
         </div>
         <div id="dispVars"></div>
@@ -122,6 +123,23 @@
 
     <!-- CONVERSAS -->
     <div id="tabConversas" class="hidden">
+      <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px">
+        <strong>Conversas</strong>
+        <button id="btnNovaConversa" class="sec" style="padding:6px 12px">+ Nova conversa</button>
+      </div>
+      <div id="novaConversaBox" class="card hidden">
+        <strong>Iniciar conversa por template</strong>
+        <div class="sub" style="margin:4px 0 8px">Para falar com quem está fora da janela de 24h (ou nunca escreveu), inicie por um template aprovado.</div>
+        <div class="row">
+          <div style="flex:1;min-width:170px"><label>Telefone (com DDD)</label><input id="ncTel" placeholder="ex: 31999998888" /></div>
+          <div style="flex:2;min-width:200px"><label>Template aprovado</label><select id="ncTpl"><option value="">— selecione —</option></select></div>
+        </div>
+        <div id="ncVars"></div>
+        <div class="sub" id="ncPreview" style="margin:8px 0;white-space:pre-wrap"></div>
+        <button id="btnIniciarConversa">Iniciar conversa</button>
+        <button class="sec" id="btnNcCancel" style="margin-left:8px">Cancelar</button>
+        <div id="ncMsg" style="margin-top:8px"></div>
+      </div>
       <div class="chat">
         <div class="convlist" id="convList"><div class="center">Carregando…</div></div>
         <div class="thread">
@@ -283,7 +301,7 @@ $("#btnDisparar").onclick=async()=>{const btn=$("#btnDisparar"),out=$("#disparoO
   if(live&&!tplName){alert("Selecione um template aprovado para o disparo real.");return}
   if(!confirm(live?`CAMPANHA LIVE: enviar o template "${tplName||'(padrão)'}" de verdade para até ${limite} clientes elegíveis. Confirmar?`:`Simular disparo para até ${limite} elegíveis?`))return;
   btn.disabled=true;out.style.display="block";out.textContent="Disparando…";
-  try{const r=await api("/disparar-hsm",{method:"POST",body:JSON.stringify({limite,template_name:tplName,language,variaveis})});out.textContent=`Modo: ${r.modo}\nTemplate: ${tplName||"(padrão do sistema)"}\nReservados: ${r.reservados}\nEnviados: ${r.enviados}\nFalhas: ${r.falhas}`;refresh()}catch(e){out.textContent="Erro: "+e.message}finally{btn.disabled=false}};
+  try{const r=await api("/disparar-hsm",{method:"POST",body:JSON.stringify({limite,template_name:tplName,language,variaveis,intervalo_ms:Number($("#intervalo").value)||300})});out.textContent=`Modo: ${r.modo}\nTemplate: ${tplName||"(padrão do sistema)"}\nReservados: ${r.reservados}\nEnviados: ${r.enviados}\nFalhas: ${r.falhas}`;refresh()}catch(e){out.textContent="Erro: "+e.message}finally{btn.disabled=false}};
 
 // conversas
 let convAtual=null,convJanela=false,pollTimer=null,convCache=[];
@@ -324,6 +342,24 @@ $("#btnEnviarTpl").onclick=async()=>{const btn=$("#btnEnviarTpl");const t=templa
   const vars=[...$("#tplVars").querySelectorAll(".tplvar")].map(i=>i.value.trim());if(vars.some(v=>!v)){alert("Preencha todas as variáveis");return}
   let body=bodyOf(t);vars.forEach((v,i)=>body=body.replace(new RegExp("\\{\\{\\s*"+(i+1)+"\\s*\\}\\}","g"),v));
   btn.disabled=true;try{await api("/enviar-template",{method:"POST",body:JSON.stringify({telefone:convAtual,template_name:t.name,language:t.language,variaveis:vars,preview:body})});$("#tplSend").classList.add("hidden");await loadThread();loadConversas()}catch(e){alert("Não enviou o template: "+e.message)}finally{btn.disabled=false}};
+
+// iniciar nova conversa por template
+$("#btnNovaConversa").onclick=async()=>{const box=$("#novaConversaBox");box.classList.toggle("hidden");if(!box.classList.contains("hidden")){$("#ncMsg").innerHTML="";await ensureTemplates();fillNcTpl()}};
+$("#btnNcCancel").onclick=()=>$("#novaConversaBox").classList.add("hidden");
+function fillNcTpl(){const sel=$("#ncTpl");const ap=aprovados();sel.innerHTML='<option value="">— selecione —</option>'+ap.map(t=>`<option value="${esc(t.name)}">${esc(t.name)} (${esc(t.language)})</option>`).join("");$("#ncVars").innerHTML=ap.length?"":'<div class="sub">Nenhum template APROVADO. Crie um na aba Templates.</div>';$("#ncPreview").textContent=""}
+$("#ncTpl").onchange=()=>{const t=templatesCache.find(x=>x.name===$("#ncTpl").value);if(!t){$("#ncVars").innerHTML="";$("#ncPreview").textContent="";return}const n=varsCount(bodyOf(t));let h="";for(let i=1;i<=n;i++)h+=`<label>Variável {{${i}}}</label><input class="ncvar" data-i="${i}" placeholder="valor de {{${i}}}" />`;$("#ncVars").innerHTML=h;ncPreview();$("#ncVars").querySelectorAll(".ncvar").forEach(inp=>inp.oninput=ncPreview)};
+function ncPreview(){const t=templatesCache.find(x=>x.name===$("#ncTpl").value);if(!t){$("#ncPreview").textContent="";return}let body=bodyOf(t);$("#ncVars").querySelectorAll(".ncvar").forEach(inp=>{body=body.replace(new RegExp("\\{\\{\\s*"+inp.dataset.i+"\\s*\\}\\}","g"),inp.value||("{{"+inp.dataset.i+"}}"))});$("#ncPreview").textContent="Prévia: "+body}
+$("#btnIniciarConversa").onclick=async()=>{const btn=$("#btnIniciarConversa"),msg=$("#ncMsg");let tel=($("#ncTel").value||"").replace(/\D/g,"");if(tel.length<=11)tel="55"+tel;const t=templatesCache.find(x=>x.name===$("#ncTpl").value);
+  if(tel.length<12){msg.innerHTML='<div class="erro">Telefone inválido — use DDD + número.</div>';return}
+  if(!t){msg.innerHTML='<div class="erro">Selecione um template aprovado.</div>';return}
+  const vars=[...$("#ncVars").querySelectorAll(".ncvar")].map(i=>i.value.trim());if(vars.some(v=>!v)){msg.innerHTML='<div class="erro">Preencha todas as variáveis.</div>';return}
+  let body=bodyOf(t);vars.forEach((v,i)=>body=body.replace(new RegExp("\\{\\{\\s*"+(i+1)+"\\s*\\}\\}","g"),v));
+  btn.disabled=true;msg.innerHTML='<div class="sub">Enviando template…</div>';
+  try{const r=await api("/enviar-template",{method:"POST",body:JSON.stringify({telefone:tel,template_name:t.name,language:t.language,variaveis:vars,preview:body})});
+    if(r.ok===false){msg.innerHTML=`<div class="erro">Falhou: ${esc(r.erro_envio||"erro no envio")}</div>`;return}
+    msg.innerHTML='<div class="ok">✅ Conversa iniciada.</div>';$("#novaConversaBox").classList.add("hidden");$("#ncTel").value="";
+    const canon=tel.replace(/^(55\d{2})9(\d{8})$/,"$1$2");await loadConversas();openConversa(canon,false)}
+  catch(e){msg.innerHTML=`<div class="erro">${esc(e.message)}</div>`}finally{btn.disabled=false}};
 
 // templates (aba)
 let templatesCache=[],templatesCarregado=false;
