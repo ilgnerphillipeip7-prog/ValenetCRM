@@ -89,7 +89,7 @@
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:15px}
   .kpi{position:relative;display:flex;flex-direction:column;gap:9px;min-height:88px;background:var(--card);border:1px solid var(--line);border-radius:var(--r2);padding:15px;overflow:hidden;box-shadow:var(--sh)}
   .kpi::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--line2)}
-  .kpi .l{color:var(--mut);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;font-weight:650;line-height:1.25}
+  .kpi .l{color:var(--mut);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;font-weight:650;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .kpi .n{font-size:25px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1;color:var(--txt);white-space:nowrap}
   .kpi.brand::before{background:linear-gradient(90deg,var(--brand),var(--brand2))}.kpi.brand .n{color:var(--brand2)}
   .kpi.ok::before{background:var(--ok)}.kpi.ok .n{color:var(--ok)}
