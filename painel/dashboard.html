@@ -115,10 +115,10 @@
   .st.PENDING,.st.IN_APPEAL,.st.PENDING_DELETION{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 45%,transparent);background:var(--warnbg)}
   .st.REJECTED,.st.DISABLED,.st.PAUSED{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 45%,transparent);background:var(--dangerbg)}
   /* notices */
-  .aviso,.erro,.ok{border-radius:var(--r2);padding:10px 13px;font-size:13px;margin-bottom:10px;border:1px solid;line-height:1.45}
+  .aviso,.erro,.ok:not(.kpi){border-radius:var(--r2);padding:10px 13px;font-size:13px;margin-bottom:10px;border:1px solid;line-height:1.45}
   .aviso{background:var(--warnbg);border-color:color-mix(in srgb,var(--warn) 40%,transparent);color:var(--warn)}
   .erro{background:var(--dangerbg);border-color:color-mix(in srgb,var(--danger) 40%,transparent);color:var(--danger)}
-  .ok{background:var(--okbg);border-color:color-mix(in srgb,var(--ok) 40%,transparent);color:var(--ok)}
+  .ok:not(.kpi){background:var(--okbg);border-color:color-mix(in srgb,var(--ok) 40%,transparent);color:var(--ok)}
   .out{white-space:pre-wrap;font-family:var(--mono);font-size:12px;background:var(--card2);border:1px solid var(--line);border-radius:var(--r2);padding:12px;margin-top:12px;color:var(--txt2)}
   /* tables */
   table{width:100%;border-collapse:collapse;font-size:13px}
