@@ -63,13 +63,16 @@ Deno.serve(async (req) => {
   const tplLang = String(body?.language ?? "").trim() || WA_LANG;
   const variaveis: any[] = Array.isArray(body?.variaveis) ? body.variaveis : [];
   const intervalo = Math.min(Math.max(Number(body?.intervalo_ms ?? 300), 0), 5000); // pausa entre envios (rate limit)
+  const codclientes: number[] = Array.isArray(body?.codclientes) ? body.codclientes.map((x: unknown) => Number(x)).filter((x: number) => Number.isFinite(x)) : [];
 
   const waReady = !!(WA_TOKEN && WA_PHONE_ID && tplName);
   const modo = (MODE === "live" && waReady && CAMPANHA_LIVE) ? "live" : "simulation";
 
   let lote: any[] = [];
   try {
-    lote = (await pg("rpc/rpc_reservar_lote", { method: "POST", body: JSON.stringify({ p_limit: limite }) })) ?? [];
+    lote = codclientes.length
+      ? ((await pg("rpc/rpc_reservar_selecionados", { method: "POST", body: JSON.stringify({ p_ids: codclientes }) })) ?? [])
+      : ((await pg("rpc/rpc_reservar_lote", { method: "POST", body: JSON.stringify({ p_limit: limite }) })) ?? []);
   } catch (e) {
     console.error("disparar-hsm reservar:", e);
     return json({ erro: "falha ao reservar lote" }, 500);

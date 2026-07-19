@@ -159,6 +159,34 @@
   .reply textarea{min-height:44px;max-height:120px}
   .tplsend{border-top:1px solid var(--hair);padding:14px;background:var(--infobg)}
   .janaviso{padding:12px 14px;border-top:1px solid var(--hair);background:var(--dangerbg);color:var(--danger);font-size:13px}
+  /* analytics: secoes, barras, donut, tabela */
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:860px){.g2{grid-template-columns:1fr}}
+  .sectitle{display:flex;align-items:baseline;gap:10px;margin:24px 2px 12px;font-weight:800;font-size:15.5px;letter-spacing:-.01em;text-wrap:balance}
+  .sectitle .c{font-size:12px;color:var(--mut);font-weight:600}
+  .hbars{display:flex;flex-direction:column;gap:9px}
+  .hbar{display:grid;grid-template-columns:var(--lblw,120px) 1fr auto;align-items:center;gap:11px;font-size:12.5px}
+  .hbar .lbl{color:var(--txt2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hbar .track{position:relative;height:15px;background:var(--card2);border:1px solid var(--line);border-radius:999px;overflow:hidden}
+  .hbar .fill{position:absolute;inset:0 auto 0 0;min-width:2px;background:linear-gradient(90deg,var(--brand),var(--brand2));border-radius:999px;box-shadow:0 0 10px -2px var(--glow);transition:width .5s cubic-bezier(.2,.7,.2,1)}
+  .hbar .val{font-weight:750;font-variant-numeric:tabular-nums;min-width:38px;text-align:right}
+  .hbar.zero .fill{background:var(--line2);box-shadow:none}.hbar.zero .val{color:var(--mut)}
+  .donut-wrap{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+  .donut{--sz:152px;width:var(--sz);height:var(--sz);border-radius:50%;position:relative;flex:none;background:var(--line2)}
+  .donut::after{content:"";position:absolute;inset:24%;border-radius:50%;background:var(--card);z-index:1}
+  .donut .dc{position:absolute;inset:0;display:grid;place-items:center;text-align:center;z-index:2}
+  .donut .dc b{font-size:23px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;display:block}
+  .donut .dc span{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
+  .legend{display:flex;flex-direction:column;gap:9px;min-width:150px}
+  .legend .li{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--txt2)}
+  .legend .sw{width:11px;height:11px;border-radius:3px;flex:none}
+  .legend .lv{font-weight:750;font-variant-numeric:tabular-nums;margin-left:auto;color:var(--txt)}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+  .toolbar .grow{flex:1;min-width:180px}
+  .tablewrap{max-height:460px;overflow:auto;border:1px solid var(--line);border-radius:var(--r2)}
+  .tablewrap table{margin:0}
+  .tablewrap thead th{position:sticky;top:0;background:var(--card);z-index:1}
+  input[type=checkbox]{appearance:auto;width:16px;height:16px;min-width:16px;padding:0;accent-color:var(--brand);cursor:pointer;border:0;background:none;box-shadow:none}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
   @media(max-width:600px){.wrap{padding:16px 13px 50px}.kpi .n{font-size:23px}.who{display:none}.brand .t2{display:none}.topbar .inner{padding:10px 14px}}
 </style>
@@ -207,8 +235,26 @@
       <div id="avisos"></div>
       <div class="grid" id="kpis"></div>
       <div class="card"><strong>Taxa de aceite</strong><div class="sub" id="taxaTxt" style="margin:4px 0">—</div><div class="meter"><i id="taxaBar" style="width:0%"></i></div><div class="sub" style="margin-top:6px">Meta do sprint: <b>20%</b></div></div>
+
+      <div class="sectitle">Análise de elegibilidade</div>
+      <div class="g2">
+        <div class="card"><strong>Funil de elegibilidade</strong><div class="sub">Aplicação cumulativa dos filtros da régua sobre a base.</div><div class="hbars" id="funilBars" style="--lblw:162px;margin-top:14px"></div></div>
+        <div class="card"><strong>Diagnóstico de telefone</strong><div class="sub">Classificação do contato — só celular recebe a oferta.</div><div class="donut-wrap" style="margin-top:16px"><div class="donut" id="diagDonut"><div class="dc" id="diagCenter"></div></div><div class="legend" id="diagLegend"></div></div></div>
+      </div>
+
+      <div class="sectitle">Perfil dos elegíveis <span class="c" id="perfilCount"></span></div>
+      <div class="g2">
+        <div class="card"><strong>Por cidade</strong><div class="sub">Top cidades entre os elegíveis.</div><div class="hbars" id="cidadeBars" style="--lblw:150px;margin-top:14px"></div></div>
+        <div class="card"><strong>Por velocidade contratada</strong><div class="sub">Faixa de banda atual (mega).</div><div class="hbars" id="velBars" style="--lblw:74px;margin-top:14px"></div></div>
+      </div>
+      <div class="g2">
+        <div class="card"><strong>Por faixa de mensalidade</strong><div class="sub">Valor do <code>Total</code> (fatura cheia).</div><div class="hbars" id="mensBars" style="--lblw:92px;margin-top:14px"></div></div>
+        <div class="card"><strong>Resumo da seleção</strong><div class="sub">Números do recorte atual.</div><div class="grid" id="resumoTiles" style="margin-top:12px"></div></div>
+      </div>
+
+      <div class="sectitle">Disparo em massa</div>
       <div class="card">
-        <div><strong>Disparar HSM</strong><div class="sub" id="disparoHint">Reserva um lote de elegíveis e envia (ou simula).</div></div>
+        <div><strong>Disparar por régua</strong><div class="sub" id="disparoHint">Reserva um lote de elegíveis pela régua e envia o template.</div></div>
         <div class="row" style="margin-top:10px">
           <div style="flex:2;min-width:220px"><label>Template (aprovado)</label><select id="dispTpl"><option value="">— carregando —</option></select></div>
           <div style="width:110px"><label>Limite do lote</label><input id="limite" type="number" value="25" min="1" max="200" /></div>
@@ -218,8 +264,21 @@
         <div id="dispVars"></div>
         <div id="disparoOut" class="out" style="display:none"></div>
       </div>
-      <div class="card"><strong>Elegíveis (preview)</strong> <span class="muted" id="elegCount"></span><div class="scroll"><table id="elegTbl"><thead><tr><th>Cliente</th><th>Cidade</th><th>Banda</th><th>Meses vig.</th><th>Total</th><th>Telefone</th></tr></thead><tbody></tbody></table></div></div>
-      <div class="card"><strong>Resultados recentes</strong><div class="scroll"><table id="resTbl"><thead><tr><th>Cliente</th><th>Telefone</th><th>Status</th><th>Resposta</th><th>Sim?</th><th>Disparo</th></tr></thead><tbody></tbody></table></div></div>
+
+      <div class="sectitle">Elegíveis &amp; disparo <span class="c">selecione e registre a oferta</span></div>
+      <div class="card">
+        <div class="toolbar">
+          <div class="grow"><input id="elSearch" placeholder="Buscar nome ou código…" /></div>
+          <select id="elCidade" style="width:auto"><option value="">Todas as cidades</option></select>
+          <select id="elVel" style="width:auto"><option value="">Toda velocidade</option><option>≤100</option><option>101–200</option><option>201–300</option><option>301–400</option><option>401–500</option></select>
+          <button id="btnRegistrarSel">Registrar disparo</button>
+        </div>
+        <div class="sub" id="elSelInfo" style="margin-bottom:8px"></div>
+        <div class="tablewrap"><table id="elTbl"><thead><tr><th style="width:36px"><input type="checkbox" id="elAll" aria-label="Selecionar todos" /></th><th>Código</th><th>Nome</th><th>Cidade</th><th>WhatsApp</th><th>Mega</th><th>Mensalidade</th></tr></thead><tbody></tbody></table></div>
+      </div>
+
+      <div class="sectitle">Resultados recentes</div>
+      <div class="card"><div class="scroll"><table id="resTbl"><thead><tr><th>Cliente</th><th>Telefone</th><th>Status</th><th>Resposta</th><th>Sim?</th><th>Disparo</th></tr></thead><tbody></tbody></table></div></div>
     </div>
 
     <!-- CONVERSAS -->
@@ -387,8 +446,8 @@ async function refresh(){try{const d=await api("/painel-dados",{method:"POST",bo
   const f=d.funil||{};
   $("#kpis").innerHTML=[["Base",f.base_total,""],["Elegíveis",f.elegiveis,"brand"],["Disparados",f.disparados,"info"],["Aceitos",f.aceitos,"ok"],["Recusas",f.recusas,"danger"],["Sem resposta",f.sem_resposta,""],["Handoff",f.handoff_humano,"warn"]].map(([l,n,t])=>`<div class="kpi ${t}"><div class="l">${l}</div><div class="n">${num(n)}</div></div>`).join("");
   const taxa=Number(f.taxa_aceite_pct||0);$("#taxaTxt").innerHTML=`<b style="font-size:20px">${taxa}%</b> de aceite sobre disparados`;$("#taxaBar").style.width=Math.min(100,(taxa/20)*100)+"%";
-  $("#elegCount").textContent="("+num((d.elegiveis||[]).length)+" mostrando)";
-  $("#elegTbl tbody").innerHTML=(d.elegiveis||[]).map(e=>`<tr><td>${esc(e.nome)}<div class="muted">#${esc(e.codcliente)}</div></td><td>${esc(e.cidade)}</td><td>${esc(e.banda)}</td><td>${esc(e.meses_vigencia)}</td><td>R$ ${esc(e.total_mensal)}</td><td class="muted">${esc(e.telefone_mascarado)}</td></tr>`).join("");
+  const A=d.analytics||{};renderFunil(A.funil||[]);renderDonut(A.diagnostico||{});renderPerfil(A);renderResumo(A.resumo||{});
+  ELEG=d.elegiveis||[];SEL.clear();buildCidadeFilter();renderElegiveis();
   $("#resTbl tbody").innerHTML=(d.recentes||[]).map(r=>`<tr><td>#${esc(r.codcliente)}</td><td class="muted">${esc(r.telefone_mascarado)}</td><td>${esc(r.status_disparo)}</td><td>${r.resposta?`<span class="pill ${esc(r.resposta)}">${esc(r.resposta)}</span>`:'<span class="muted">—</span>'}</td><td>${r.simulado?'<span class="pill">simulado</span>':''}</td><td class="muted">${hora(r.data_disparo)}</td></tr>`).join("");
   fillDispTpl();
 }catch(e){$("#avisos").innerHTML=`<div class="erro">Erro: ${esc(e.message)}</div>`}}
@@ -403,6 +462,43 @@ $("#btnDisparar").onclick=async()=>{const btn=$("#btnDisparar"),out=$("#disparoO
   if(!confirm(live?`CAMPANHA LIVE: enviar o template "${tplName||'(padrão)'}" de verdade para até ${limite} clientes elegíveis. Confirmar?`:`Simular disparo para até ${limite} elegíveis?`))return;
   btn.disabled=true;out.style.display="block";out.textContent="Disparando…";
   try{const r=await api("/disparar-hsm",{method:"POST",body:JSON.stringify({limite,template_name:tplName,language,variaveis,intervalo_ms:Number($("#intervalo").value)||300})});out.textContent=`Modo: ${r.modo}\nTemplate: ${tplName||"(padrão do sistema)"}\nReservados: ${r.reservados}\nEnviados: ${r.enviados}\nFalhas: ${r.falhas}`;refresh()}catch(e){out.textContent="Erro: "+e.message}finally{btn.disabled=false}};
+
+// analytics (graficos da campanha)
+function hbars(el,items,opts){if(!el)return;opts=opts||{};const arr=items||[];const max=Math.max(1,opts.max||0,...arr.map(x=>Number(x.n)||0));
+  el.innerHTML=arr.length?arr.map(it=>{const n=Number(it.n)||0;const pct=n<=0?0:Math.max(2,Math.round(n/max*100));return `<div class="hbar ${n<=0?'zero':''}"><div class="lbl">${esc(it.label)}</div><div class="track"><div class="fill" style="width:${pct}%"></div></div><div class="val">${num(n)}</div></div>`}).join(""):'<div class="sub">Sem dados.</div>'}
+function renderFunil(items){const base=items&&items[0]?Number(items[0].n):1;hbars($("#funilBars"),items,{max:base})}
+function renderPerfil(A){hbars($("#cidadeBars"),A.por_cidade||[]);hbars($("#velBars"),A.por_velocidade||[]);hbars($("#mensBars"),A.por_mensalidade||[]);const r=A.resumo||{};$("#perfilCount").textContent=r.elegiveis!=null?num(r.elegiveis)+" elegíveis":""}
+function renderDonut(dg){dg=dg||{};const parts=[["Celular (11 díg)",Number(dg.movel_9)||0,"var(--brand)"],["Celular normalizado",Number(dg.movel_norm)||0,"var(--info)"],["Fixo / inválido",Number(dg.fixo)||0,"var(--mut)"]].filter(p=>p[1]>0);
+  const total=parts.reduce((a,p)=>a+p[1],0)||1;let acc=0;const segs=parts.map(p=>{const s=acc/total*360;acc+=p[1];return `${p[2]} ${s}deg ${acc/total*360}deg`}).join(",");
+  $("#diagDonut").style.background=segs?`conic-gradient(${segs})`:"var(--line2)";
+  $("#diagCenter").innerHTML=`<div><b>${num(dg.total||0)}</b><span>total</span></div>`;
+  $("#diagLegend").innerHTML=parts.length?parts.map(p=>`<div class="li"><span class="sw" style="background:${p[2]}"></span>${esc(p[0])}<span class="lv">${num(p[1])}</span></div>`).join(""):'<div class="sub">Sem dados.</div>'}
+function brl(v){return v==null?"—":"R$ "+String(v).replace(".",",")}
+function renderResumo(r){r=r||{};$("#resumoTiles").innerHTML=[["Elegíveis",num(r.elegiveis||0),"brand"],["Cidades",num(r.cidades||0),"info"],["Ticket médio",brl(r.ticket_medio),""],["Banda média",num(r.banda_media||0)+" MB",""]].map(([l,v,t])=>`<div class="kpi ${t}"><div class="l">${l}</div><div class="n" style="font-size:19px">${v}</div></div>`).join("")}
+
+// elegiveis: busca, filtro, selecao, registrar disparo
+let ELEG=[],SEL=new Set();
+function velBucket(b){b=Number(b)||0;if(b<=100)return"≤100";if(b<=200)return"101–200";if(b<=300)return"201–300";if(b<=400)return"301–400";return"401–500"}
+function buildCidadeFilter(){const sel=$("#elCidade");if(!sel)return;const cur=sel.value;const cids=[...new Set(ELEG.map(e=>e.cidade).filter(Boolean))].sort();sel.innerHTML='<option value="">Todas as cidades</option>'+cids.map(c=>`<option>${esc(c)}</option>`).join("");if(cur)sel.value=cur}
+function filteredEleg(){const q=($("#elSearch").value||"").toLowerCase().trim();const cid=$("#elCidade").value;const vel=$("#elVel").value;
+  return ELEG.filter(e=>{if(cid&&e.cidade!==cid)return false;if(vel&&velBucket(e.banda)!==vel)return false;if(q&&!((e.nome||"").toLowerCase().includes(q)||String(e.codcliente).includes(q)))return false;return true})}
+function updateSelInfo(){const n=SEL.size;$("#elSelInfo").textContent=n?`${n} selecionado(s) para disparo`:`${filteredEleg().length} elegível(is) no filtro atual`;const btn=$("#btnRegistrarSel");if(btn)btn.textContent=n?`Registrar disparo (${n})`:"Registrar disparo"}
+function renderElegiveis(){const rows=filteredEleg();
+  $("#elTbl tbody").innerHTML=rows.length?rows.map(e=>`<tr data-id="${e.codcliente}"><td><input type="checkbox" class="elchk" data-id="${e.codcliente}" ${SEL.has(e.codcliente)?"checked":""}/></td><td class="muted">${esc(e.codcliente)}</td><td>${esc(e.nome)}</td><td>${esc(e.cidade)}</td><td class="muted">${esc(e.telefone_e164)}</td><td>${esc(e.banda)}</td><td>${brl(e.total_mensal)}</td></tr>`).join(""):'<tr><td colspan="7" style="text-align:center;color:var(--mut);padding:22px">Nenhum elegível com esse filtro.</td></tr>';
+  $("#elTbl tbody").querySelectorAll(".elchk").forEach(c=>c.onchange=()=>{const id=Number(c.dataset.id);if(c.checked)SEL.add(id);else SEL.delete(id);const r2=filteredEleg();$("#elAll").checked=r2.length>0&&r2.every(x=>SEL.has(x.codcliente));updateSelInfo()});
+  const all=$("#elAll");if(all)all.checked=rows.length>0&&rows.every(e=>SEL.has(e.codcliente));updateSelInfo()}
+$("#elSearch").oninput=renderElegiveis;$("#elCidade").onchange=renderElegiveis;$("#elVel").onchange=renderElegiveis;
+$("#elAll").onchange=()=>{const rows=filteredEleg();if($("#elAll").checked)rows.forEach(e=>SEL.add(e.codcliente));else rows.forEach(e=>SEL.delete(e.codcliente));renderElegiveis()};
+$("#btnRegistrarSel").onclick=async()=>{const ids=[...SEL];if(!ids.length){alert("Selecione ao menos um elegível na tabela.");return}
+  const tplName=$("#dispTpl")?.value||"";const t=templatesCache.find(x=>x.name===tplName);const language=t?t.language:"pt_BR";
+  let variaveis=[];if(t){const n=varsCount(bodyOf(t));for(let i=1;i<=n;i++){const tipo=$("#dispVars .dvtipo[data-i='"+i+"']")?.value||"campo";const valor=tipo==="fixo"?($("#dispVars .dvfixo[data-i='"+i+"']")?.value||"").trim():"nome";variaveis.push({tipo,valor})}}
+  const live=!!(window._cfg&&window._cfg.campanha_live);
+  if(live&&!tplName){alert("Escolha um template aprovado no card Disparo em massa antes de registrar.");return}
+  if(!confirm((live?"CAMPANHA LIVE — enviar de verdade":"Simular envio")+` para ${ids.length} cliente(s) selecionado(s)?`))return;
+  const btn=$("#btnRegistrarSel");btn.disabled=true;const old=btn.textContent;btn.textContent="Enviando…";
+  try{const r=await api("/disparar-hsm",{method:"POST",body:JSON.stringify({codclientes:ids,template_name:tplName,language,variaveis,intervalo_ms:Number($("#intervalo").value)||300})});
+    alert(`Modo: ${r.modo}\nReservados: ${r.reservados}\nEnviados: ${r.enviados}\nFalhas: ${r.falhas}`);SEL.clear();await refresh()}
+  catch(e){alert("Erro: "+e.message)}finally{btn.disabled=false;btn.textContent=old}};
 
 // conversas
 let convAtual=null,convJanela=false,pollTimer=null,convCache=[];

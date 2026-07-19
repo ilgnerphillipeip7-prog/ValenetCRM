@@ -43,15 +43,20 @@ Deno.serve(async (req) => {
   if (!(await autorizado(req))) return json({ erro: "nao autorizado" }, 401);
   try {
     const funil = (await pg("vw_funil_campanha?select=*"))?.[0] ?? {};
-    const elegiveis = await pg("vw_elegiveis_preview?select=*&limit=100");
+    const elegiveis = await pg("vw_elegiveis_full?select=*&order=cidade,nome&limit=500");
     const recentes = await pg("vw_resultados_recentes?select=*&limit=50");
+    let analytics: any = {};
+    try {
+      const ar = await fetch(`${SB_URL}/rest/v1/rpc/painel_analytics`, { method: "POST", headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "content-type": "application/json" }, body: "{}" });
+      if (ar.ok) analytics = await ar.json();
+    } catch (_e) { /* ignora */ }
     const avisos: string[] = [];
     if (!chatLive) avisos.push("Modo SIMULACAO: nenhuma mensagem real e enviada.");
     else avisos.push("Chat em LIVE: respostas no inbox sao enviadas de verdade pelo WhatsApp.");
     if (chatLive && !campanhaLive) avisos.push("Disparo em massa em SIMULACAO: defina CAMPANHA_LIVE=true para enviar de verdade.");
     else if (campanhaLive) avisos.push("Campanha em LIVE: o disparo em massa envia templates reais aos elegiveis.");
     return json({
-      funil, elegiveis, recentes,
+      funil, elegiveis, recentes, analytics,
       config: { modo: chatLive ? "live" : "simulation", chat_live: chatLive, campanha_live: campanhaLive, whatsapp_configurado: !!(WA_TOKEN && WA_PHONE), template: WA_TEMPLATE || null, meta_taxa_aceite: 20 },
       avisos,
     });
