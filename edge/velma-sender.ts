@@ -109,7 +109,7 @@ async function processItem(item: any, ttsOn: boolean): Promise<void> {
   const res = audioLink ? await enviarWhatsAudio(to, audioLink) : await enviarWhats(to, texto);
   const tipoOut = audioLink ? "audio" : "text";
   // Registra a saida no inbox (historico da Velma)
-  await pg("mensagens", { method: "POST", body: JSON.stringify({ telefone_e164: to, direcao: "out", autor: "velma", tipo: tipoOut, texto, wa_message_id: res.wa_id, status: res.status, simulado: res.simulado }) }).catch((e) => console.error("sender inbox:", e));
+  await pg("mensagens", { method: "POST", body: JSON.stringify({ telefone_e164: to, direcao: "out", autor: "velma", tipo: tipoOut, texto, wa_message_id: res.wa_id, status: res.status, simulado: res.simulado, ia_ms: item?.metadata?.ia_ms ?? null }) }).catch((e) => console.error("sender inbox:", e));
 
   if (res.status === "enviado") {
     await pg(`fila_envio?id=eq.${item.id}`, { method: "PATCH", body: JSON.stringify({ status: "completed", sent_at: new Date().toISOString(), wa_message_id: res.wa_id, media_url: audioLink }) });

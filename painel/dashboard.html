@@ -181,6 +181,14 @@
   .legend .li{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--txt2)}
   .legend .sw{width:11px;height:11px;border-radius:3px;flex:none}
   .legend .lv{font-weight:750;font-variant-numeric:tabular-nums;margin-left:auto;color:var(--txt)}
+  .vbars{display:flex;align-items:flex-end;gap:5px;height:150px;margin-top:16px}
+  .vbar{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;height:100%}
+  .vbar .bar{width:100%;max-width:22px;min-height:2px;display:flex;flex-direction:column;border-radius:5px 5px 0 0;overflow:hidden}
+  .vbar .seg{width:100%}.vbar .seg.e{background:var(--ok)}.vbar .seg.r{background:var(--brand)}
+  .vbar .d{font-size:9px;color:var(--mut);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .chips{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap}
+  .chip{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--txt2)}
+  .chip .sw{width:10px;height:10px;border-radius:3px;flex:none}
   .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
   .toolbar .grow{flex:1;min-width:180px}
   .tablewrap{max-height:460px;overflow:auto;border:1px solid var(--line);border-radius:var(--r2)}
@@ -372,6 +380,17 @@
 
       <div class="grid" id="velmaKpis"></div>
 
+      <div class="sectitle">Desempenho da Velma</div>
+      <div class="g2">
+        <div class="card"><strong>Volume de mensagens</strong><div class="sub">Recebidas × respostas da Velma (últimos 14 dias).</div><div class="vbars" id="velVolume"></div><div class="chips"><span class="chip"><span class="sw" style="background:var(--brand)"></span>Recebidas</span><span class="chip"><span class="sw" style="background:var(--ok)"></span>Respostas</span></div></div>
+        <div class="card"><strong>Estado das conversas</strong><div class="sub">Distribuição atual por modo de atendimento.</div><div class="donut-wrap" style="margin-top:16px"><div class="donut" id="velEstadosDonut"><div class="dc" id="velEstadosCenter"></div></div><div class="legend" id="velEstadosLegend"></div></div></div>
+      </div>
+      <div class="g2">
+        <div class="card"><strong>Desfechos</strong><div class="sub">Resultado das conversas atendidas pela IA.</div><div class="hbars" id="velDesfechos" style="--lblw:172px;margin-top:14px"></div></div>
+        <div class="card"><strong>Latência da IA</strong><div class="sub">Tempo de raciocínio por resposta.</div><div class="grid" id="velLatencia" style="margin-top:12px;grid-template-columns:repeat(3,1fr)"></div></div>
+      </div>
+
+      <div class="sectitle">Configuração</div>
       <div class="card">
         <strong>Comportamento</strong>
         <div class="row" style="margin-top:8px">
@@ -468,11 +487,20 @@ function hbars(el,items,opts){if(!el)return;opts=opts||{};const arr=items||[];co
   el.innerHTML=arr.length?arr.map(it=>{const n=Number(it.n)||0;const pct=n<=0?0:Math.max(2,Math.round(n/max*100));return `<div class="hbar ${n<=0?'zero':''}"><div class="lbl">${esc(it.label)}</div><div class="track"><div class="fill" style="width:${pct}%"></div></div><div class="val">${num(n)}</div></div>`}).join(""):'<div class="sub">Sem dados.</div>'}
 function renderFunil(items){const base=items&&items[0]?Number(items[0].n):1;hbars($("#funilBars"),items,{max:base})}
 function renderPerfil(A){hbars($("#cidadeBars"),A.por_cidade||[]);hbars($("#velBars"),A.por_velocidade||[]);hbars($("#mensBars"),A.por_mensalidade||[]);const r=A.resumo||{};$("#perfilCount").textContent=r.elegiveis!=null?num(r.elegiveis)+" elegíveis":""}
-function renderDonut(dg){dg=dg||{};const parts=[["Celular (11 díg)",Number(dg.movel_9)||0,"var(--brand)"],["Celular normalizado",Number(dg.movel_norm)||0,"var(--ok)"],["Fixo / inválido",Number(dg.fixo)||0,"var(--mut)"]].filter(p=>p[1]>0);
-  const total=parts.reduce((a,p)=>a+p[1],0)||1;let acc=0;const segs=parts.map(p=>{const s=acc/total*360;acc+=p[1];return `${p[2]} ${s}deg ${acc/total*360}deg`}).join(",");
-  $("#diagDonut").style.background=segs?`conic-gradient(${segs})`:"var(--line2)";
-  $("#diagCenter").innerHTML=`<div><b>${num(dg.total||0)}</b><span>total</span></div>`;
-  $("#diagLegend").innerHTML=parts.length?parts.map(p=>`<div class="li"><span class="sw" style="background:${p[2]}"></span>${esc(p[0])}<span class="lv">${num(p[1])}</span></div>`).join(""):'<div class="sub">Sem dados.</div>'}
+function paintDonut(donut,center,legend,parts,totalTxt,totalOverride){parts=(parts||[]).filter(p=>Number(p[1])>0);
+  const sum=parts.reduce((a,p)=>a+Number(p[1]),0);const total=sum||1;let acc=0;
+  const segs=parts.map(p=>{const s=acc/total*360;acc+=Number(p[1]);return `${p[2]} ${s}deg ${acc/total*360}deg`}).join(",");
+  if(donut)donut.style.background=segs?`conic-gradient(${segs})`:"var(--line2)";
+  if(center)center.innerHTML=`<div><b>${num(totalOverride!=null?totalOverride:sum)}</b><span>${totalTxt||'total'}</span></div>`;
+  if(legend)legend.innerHTML=parts.length?parts.map(p=>`<div class="li"><span class="sw" style="background:${p[2]}"></span>${esc(p[0])}<span class="lv">${num(p[1])}</span></div>`).join(""):'<div class="sub">Sem dados.</div>'}
+function renderDonut(dg){dg=dg||{};paintDonut($("#diagDonut"),$("#diagCenter"),$("#diagLegend"),[["Celular (11 díg)",Number(dg.movel_9)||0,"var(--brand)"],["Celular normalizado",Number(dg.movel_norm)||0,"var(--ok)"],["Fixo / inválido",Number(dg.fixo)||0,"var(--mut)"]],"total",dg.total)}
+function renderVelmaAnalytics(A){A=A||{};
+  const vol=A.volume||[];const maxV=Math.max(1,...vol.map(x=>(Number(x.recebidas)||0)+(Number(x.enviadas)||0)));
+  const vv=$("#velVolume");if(vv)vv.innerHTML=vol.length?vol.map(x=>{const rec=Number(x.recebidas)||0,env=Number(x.enviadas)||0,tot=rec+env;const h=tot?Math.max(3,Math.round(tot/maxV*100)):0;return `<div class="vbar" title="${esc(x.dia)}: ${rec} recebidas, ${env} respostas"><div class="bar" style="height:${h}%">${env?`<div class="seg e" style="flex:${env}"></div>`:""}${rec?`<div class="seg r" style="flex:${rec}"></div>`:""}</div><div class="d">${esc(x.dia)}</div></div>`}).join(""):'<div class="sub">Sem dados ainda.</div>';
+  const es=A.estados||[];const cols=["var(--brand)","var(--ok)","var(--warn)","var(--mut)"];
+  paintDonut($("#velEstadosDonut"),$("#velEstadosCenter"),$("#velEstadosLegend"),es.map((e,i)=>[e.label,Number(e.n)||0,cols[i%cols.length]]),"conversas");
+  const df=A.desfechos||{};hbars($("#velDesfechos"),[{label:"Aceites",n:df.aceites||0},{label:"Transferidas p/ humano",n:df.humano||0},{label:"Em andamento (IA)",n:df.em_andamento||0}]);
+  const lt=A.latencia||{};$("#velLatencia").innerHTML=[["Média",lt.media_ms?num(lt.media_ms)+" ms":"—","brand"],["Máximo",lt.max_ms?num(lt.max_ms)+" ms":"—",""],["Amostras",num(lt.amostras||0),"info"]].map(([l,v,t])=>`<div class="kpi ${t}"><div class="l">${l}</div><div class="n">${v}</div></div>`).join("")}
 function brl(v){return v==null?"—":"R$ "+String(v).replace(".",",")}
 function renderResumo(r){r=r||{};$("#resumoTiles").innerHTML=[["Elegíveis",num(r.elegiveis||0),"brand"],["Cidades",num(r.cidades||0),"info"],["Ticket médio",brl(r.ticket_medio),"ok"],["Banda média",num(r.banda_media||0)+" MB",""]].map(([l,v,t])=>`<div class="kpi ${t}"><div class="l">${l}</div><div class="n">${v}</div></div>`).join("")}
 
@@ -585,6 +613,7 @@ async function loadVelma(){const msg=$("#velmaMsg");msg.innerHTML="";try{const d
   const av=$("#velmaAviso");if(!d.anthropic_ready){av.classList.remove("hidden");av.textContent="⚠️ ANTHROPIC_API_KEY não configurada no Supabase — não é possível ativar a Velma até cadastrar a chave.";tog.disabled=!on}else{av.classList.add("hidden");tog.disabled=false}
   $("#vPersona").value=s.persona_nome||"";$("#vTom").value=s.tom||"";$("#vDebounce").value=s.debounce_seconds??10;$("#vDelayMin").value=s.response_delay_min??1000;$("#vDelayMax").value=s.response_delay_max??3000;$("#vBreak").checked=s.message_breaking_enabled!==false;$("#vPrompt").value=s.system_prompt_override||"";$("#vKb").value=s.kb||"";
   const st=d.stats||{};$("#velmaKpis").innerHTML=[["Aguard. agrupar",st.agrup_pending,""],["Fila IA",st.ia_pending,"info"],["Fila envio",st.envio_pending,"info"],["Em humano",st.em_humano,"warn"],["Aceites",st.aceites,"ok"],["IA falhou",st.ia_failed,"danger"],["Envio falhou",st.envio_failed,"danger"]].map(([l,n,t])=>`<div class="kpi ${t}"><div class="l">${esc(l)}</div><div class="n">${num(n||0)}</div></div>`).join("");
+  renderVelmaAnalytics(d.analytics||{});
 }catch(e){msg.innerHTML=`<div class="erro">Erro: ${esc(e.message)}</div>`}}
 async function saveVelma(patch){const msg=$("#velmaMsg");try{await api("/velma-config",{method:"POST",body:JSON.stringify({action:"save",patch})});msg.innerHTML='<div class="ok">✅ Salvo.</div>';await loadVelma()}catch(e){msg.innerHTML=`<div class="erro">${esc(e.message)}</div>`}}
 $("#btnVelmaToggle").onclick=()=>{const on=!!(velmaCfg&&velmaCfg.settings&&velmaCfg.settings.is_active);if(!on&&!confirm("Ativar a Velma? Ela passará a responder automaticamente os clientes da base em conversas no modo velma."))return;saveVelma({is_active:!on})};

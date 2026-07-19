@@ -55,7 +55,8 @@ Deno.serve(async (req) => {
     if (action === "get") {
       const s = (await pg("velma_settings?select=*&limit=1"))?.[0] ?? null;
       const stats = await pg("rpc/velma_stats", { method: "POST", body: "{}" }).catch(() => ({}));
-      return json({ settings: s, anthropic_ready: ANTHROPIC_READY, stats });
+      const analytics = await pg("rpc/velma_analytics", { method: "POST", body: "{}" }).catch(() => ({}));
+      return json({ settings: s, anthropic_ready: ANTHROPIC_READY, stats, analytics });
     }
 
     if (action === "save") {
